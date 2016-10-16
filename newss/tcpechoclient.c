@@ -52,11 +52,11 @@ int main(int numArgs , char *args[])
     }
     puts("Socket created");
 
-    port = atoi(args[4]);
+    port = atoi(args[3]);
 
-    server.sin_addr.s_addr = inet_addr("127.0.0.1");
+    server.sin_addr.s_addr = inet_addr(args[1]);
     server.sin_family = AF_INET;
-    server.sin_port = htons( 8888 );
+    server.sin_port = htons( port );
 
     //Conexion al servidor
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)

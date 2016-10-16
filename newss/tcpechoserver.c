@@ -54,9 +54,14 @@ int main(int numArgs , char *args[])
     }
     puts("Socket created");
 
+    if (numArgs == 7)
+        port = atoi(args[1]);
+    else
+        port = 51818;
+
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons( 8888 );
+    server.sin_port = htons(port);
 
     //Bind
     if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
