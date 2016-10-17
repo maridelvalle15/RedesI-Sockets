@@ -5,7 +5,7 @@
 * @author Marisela Del Valle 11-10267
 *
 * @description
-*       Conexión TCP clientr-servidor. Crea el socket e intenta conectarse con el servidor.
+*       Conexión TCP cliente-servidor. Crea el socket e intenta conectarse con el servidor.
 *
 */
 
@@ -19,8 +19,11 @@
 #include <arpa/inet.h>
 #include <string.h>
 
-int main(int numArgs , char *args[])
-{
+
+/*
+    Funcion principal
+*/
+void main(int numArgs , char *args[]){
 
     // Verificamos los parametros de entrada.
     if (numArgs != 9){
@@ -40,9 +43,13 @@ int main(int numArgs , char *args[])
         exit(1);
     }
 
+    // Variables para conexion
     int sock, port;
     struct sockaddr_in server;
     char message[1000] , server_reply[2000];
+
+    //Variables del cajero
+    int TotalDisponible;
 
     //Creacion del socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
@@ -54,9 +61,9 @@ int main(int numArgs , char *args[])
 
     port = atoi(args[4]);
 
-    server.sin_addr.s_addr = inet_addr("127.0.0.1");
+    server.sin_addr.s_addr = inet_addr(args[2]);
     server.sin_family = AF_INET;
-    server.sin_port = htons( 8888 );
+    server.sin_port = htons(port);
 
     //Conexion al servidor
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
@@ -92,5 +99,4 @@ int main(int numArgs , char *args[])
     }
 
     close(sock);
-    return 0;
 }

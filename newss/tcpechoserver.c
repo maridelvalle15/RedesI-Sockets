@@ -20,8 +20,11 @@
 //Para crear hilos
 void *connection_handler(void *);
 
-int main(int numArgs , char *args[])
-{
+
+/*
+    Funcion principal
+*/
+void main(int numArgs , char *args[]){
 
     // Verificamos los parametros de entrada.
 
@@ -54,16 +57,18 @@ int main(int numArgs , char *args[])
     }
     puts("Socket created");
 
+    port = atoi(args[2]);
+
     server.sin_family = AF_INET;
-    server.sin_addr.s_addr = INADDR_ANY;
-    server.sin_port = htons( 8888 );
+    server.sin_addr.s_addr = htonl(INADDR_ANY);
+    server.sin_port = htons(port);
 
     //Bind
     if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
     {
 
         perror("bind failed. Error");
-        return 1;
+        exit(1);
     }
     puts("bind done");
 
@@ -89,7 +94,7 @@ int main(int numArgs , char *args[])
         if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_sock) < 0)
         {
             perror("could not create thread");
-            return 1;
+            exit(1);
         }
 
         puts("Handler assigned");
@@ -98,17 +103,16 @@ int main(int numArgs , char *args[])
     if (client_sock < 0)
     {
         perror("accept failed");
-        return 1;
+        exit(1);
     }
-
-    return 0;
 }
 
+
 /*
- * Manejo de conexion con varios clientes a traves de hilos
- * */
-void *connection_handler(void *socket_desc)
-{
+    Manejo de conexion con varios clientes a traves de hilos
+*/
+void *connection_handler(void *socket_desc){
+
     //Informacion del socket
     int sock = *(int*)socket_desc;
     int read_size;
@@ -138,6 +142,4 @@ void *connection_handler(void *socket_desc)
     }
 
     free(socket_desc);
-
-    return 0;
 }
