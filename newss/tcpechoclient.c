@@ -59,8 +59,7 @@ void main(int numArgs , char *args[]){
     }
     puts("Socket created");
 
-    port = atoi(args[4]);
-
+    port = atoi(args[3]);
     server.sin_addr.s_addr = inet_addr(args[2]);
     server.sin_family = AF_INET;
     server.sin_port = htons(port);
