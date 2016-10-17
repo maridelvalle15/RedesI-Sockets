@@ -1,18 +1,50 @@
-/*
-    C ECHO client example using sockets
+/**
+* @title Client
+*
+* @author Mathieu De Valery 10-10193
+* @author Marisela Del Valle 11-10267
+*
+* @description
+*       Conexión TCP clientr-servidor. Crea el socket e intenta conectarse con el servidor.
+*
 */
-#include<stdio.h> //printf
-#include<string.h>    //strlen
-#include<sys/socket.h>    //socket
-#include<arpa/inet.h> //inet_addr
 
-int main(int argc , char *argv[])
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <sys/types.h>
+#include <arpa/inet.h>
+#include <string.h>
+
+int main(int numArgs , char *args[])
 {
-    int sock;
+
+    // Verificamos los parametros de entrada.
+    if (numArgs != 9){
+        printf("Error de argumentos: numero equivocado de argumentos.\n");
+        exit(1);
+    }
+    if ((strcmp(args[1],"-d") != 0) || (strcmp(args[3],"-p") != 0) || (strcmp(args[5],"-c") != 0) ||
+        (strcmp(args[7],"-i") != 0)) {
+        printf("\nError de argumentos: Argumentos en orden equivocado.\n");
+        printf("Sintaxis: ");
+        printf("bsb_cli -d <nombre_modulo_atencion> -p <puerto_bsb_svr> -c <op> -i <codigo_usuario>\n" );
+        exit(1);
+    }
+    // Verificamos que la operacion sea de retiro (r) o deposito (d)
+    if ((strcmp(args[6],"d") != 0) && (strcmp(args[6],"r") != 0)){
+        printf("\nError de argumentos: Solo son operaciones validas 'd' o 'r'.\n");
+        exit(1);
+    }
+
+    int sock, port;
     struct sockaddr_in server;
     char message[1000] , server_reply[2000];
 
-    //Create socket
+    //Creacion del socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
     if (sock == -1)
     {
@@ -20,11 +52,13 @@ int main(int argc , char *argv[])
     }
     puts("Socket created");
 
+    port = atoi(args[4]);
+
     server.sin_addr.s_addr = inet_addr("127.0.0.1");
     server.sin_family = AF_INET;
     server.sin_port = htons( 8888 );
 
-    //Connect to remote server
+    //Conexion al servidor
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
     {
         perror("connect failed. Error");
@@ -33,20 +67,20 @@ int main(int argc , char *argv[])
 
     puts("Connected\n");
 
-    //keep communicating with server
+    //Mantiene la conexion con el servidor
     while(1)
     {
         printf("Enter message : ");
         scanf("%s" , message);
 
-        //Send some data
+        //Envio de datos
         if( send(sock , message , strlen(message) , 0) < 0)
         {
             puts("Send failed");
             return 1;
         }
 
-        //Receive a reply from the server
+        //Recepcion de respuesta del servidor
         if( recv(sock , server_reply , 2000 , 0) < 0)
         {
             puts("recv failed");

@@ -1,24 +1,52 @@
-/*
-    C socket server example, handles multiple clients using threads
+/**
+* @title Server
+*
+* @author Mathieu De Valery 10-10193
+* @author Marisela Del Valle 11-10267
+*
+* @description
+*           Crea el servidor y crea un nuevo socket para que uno o mas clientes se conecten.
+*
 */
 
-#include<stdio.h>
-#include<string.h>    //strlen
-#include<stdlib.h>    //strlen
-#include<sys/socket.h>
-#include<arpa/inet.h> //inet_addr
-#include<unistd.h>    //write
-#include<pthread.h> //for threading , link with lpthread
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <pthread.h>
 
-//the thread function
+//Para crear hilos
 void *connection_handler(void *);
 
-int main(int argc , char *argv[])
+int main(int numArgs , char *args[])
 {
-    int socket_desc , client_sock , c , *new_sock;
+
+    // Verificamos los parametros de entrada.
+
+    if (numArgs != 7){
+        printf("Error de argumentos: numero equivocado de argumentos.\n");
+        printf("Sintaxis: ");
+        printf("bsb_svr -l <puerto_bsb_svr> -i <bitácora_deposito> -o <bitácora_retiro>\n" );
+        exit(1);
+    }
+    if ((strcmp(args[1],"-l") != 0) || (strcmp(args[3],"-i") != 0) || (strcmp(args[5],"-o") != 0) ) {
+        printf("\nError de argumentos: Argumentos en orden equivocado.\n");
+        printf("Sintaxis: ");
+        printf("bsb_svr -l <puerto_bsb_svr> -i <bitácora_deposito> -o <bitácora_retiro>\n" );
+        exit(1);
+    }
+    // Verificamos que los archivos de entrada y salida no se llamen igual
+    if ((strcmp(args[4],args[6]) == 0)){
+        printf("Error de argumentos: Los archivos de entrada y salida no deben llamarse igual.\n" );
+        exit(1);
+    }
+
+    int socket_desc , client_sock , c , *new_sock, port;
     struct sockaddr_in server , client;
 
-    //Create socket
+    //Creacion del socket
     socket_desc = socket(AF_INET , SOCK_STREAM , 0);
     if (socket_desc == -1)
     {
@@ -26,7 +54,6 @@ int main(int argc , char *argv[])
     }
     puts("Socket created");
 
-    //Prepare the sockaddr_in structure
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
     server.sin_port = htons( 8888 );
@@ -34,7 +61,7 @@ int main(int argc , char *argv[])
     //Bind
     if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
     {
-        //print the error message
+
         perror("bind failed. Error");
         return 1;
     }
@@ -43,18 +70,18 @@ int main(int argc , char *argv[])
     //Listen
     listen(socket_desc , 3);
 
-    //Accept and incoming connection
     puts("Waiting for incoming connections...");
     c = sizeof(struct sockaddr_in);
 
 
-    //Accept and incoming connection
+    //Acepta la conexion
     puts("Waiting for incoming connections...");
     c = sizeof(struct sockaddr_in);
     while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
     {
         puts("Connection accepted");
 
+        // Creamos los hilos para multiples conexiones
         pthread_t sniffer_thread;
         new_sock = malloc(1);
         *new_sock = client_sock;
@@ -65,8 +92,6 @@ int main(int argc , char *argv[])
             return 1;
         }
 
-        //Now join the thread , so that we dont terminate before the thread
-        //pthread_join( sniffer_thread , NULL);
         puts("Handler assigned");
     }
 
@@ -80,26 +105,25 @@ int main(int argc , char *argv[])
 }
 
 /*
- * This will handle connection for each client
+ * Manejo de conexion con varios clientes a traves de hilos
  * */
 void *connection_handler(void *socket_desc)
 {
-    //Get the socket descriptor
+    //Informacion del socket
     int sock = *(int*)socket_desc;
     int read_size;
     char *message , client_message[2000];
 
-    //Send some messages to the client
+    //Enviamos y recibimos mensajes del cliente
     message = "Greetings! I am your connection handler\n";
     write(sock , message , strlen(message));
 
     message = "Now type something and i shall repeat what you type \n";
     write(sock , message , strlen(message));
 
-    //Receive a message from client
     while( (read_size = recv(sock , client_message , 2000 , 0)) > 0 )
     {
-        //Send the message back to client
+
         write(sock , client_message , strlen(client_message));
     }
 
@@ -113,7 +137,6 @@ void *connection_handler(void *socket_desc)
         perror("recv failed");
     }
 
-    //Free the socket pointer
     free(socket_desc);
 
     return 0;
