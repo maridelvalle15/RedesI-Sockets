@@ -51,6 +51,8 @@ void main(int numArgs , char *args[]){
     //Variables del cajero
     int TotalDisponible;
 
+    TotalDisponible = 80000;
+
     //Creacion del socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
     if (sock == -1)
