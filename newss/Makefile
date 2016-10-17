@@ -1,15 +1,10 @@
-CC = gcc
-CFLAGS = -g
-
 all : tcpechoserver tcpechoclient
 
 tcpechoserver : tcpechoserver.c
-	$(CC) $(CFLAGS) -o tcpechoserver tcpechoserver.c -pthread
+	gcc -o bsb_svr tcpechoserver.c -pthread
 
 tcpechoclient : tcpechoclient.c
-	$(CC) $(CFLAGS) -o tcpechoclient tcpechoclient.c
+	gcc -o bsb_cli tcpechoclient.c
 
 clear :
 	rm *.o
-
-
