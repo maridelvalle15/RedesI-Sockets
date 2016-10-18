@@ -45,11 +45,6 @@ void main(int numArgs , char *args[])
     struct sockaddr_in server;
     char message[1000] , server_reply[2000];
 
-    // Variables del cajero
-    int TotalDisponible;
-
-    TotalDisponible = 80000;
-
     //Creacion del socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
     if (sock == -1)
@@ -76,6 +71,9 @@ void main(int numArgs , char *args[])
     //Mantiene la conexion con el servidor
     while(1)
     {
+
+        char server_reply[2000];
+        memset(server_reply,0,sizeof(server_reply)/sizeof(int));
 
         if (strcmp(args[6],"d") == 0){
 

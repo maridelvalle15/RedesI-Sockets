@@ -46,8 +46,17 @@ void main(int numArgs , char *args[]){
         exit(1);
     }
 
+    // Variables para el socket
     int socket_desc , client_sock , c , *new_sock, port;
     struct sockaddr_in server , client;
+
+    // Variables del cajero
+    int TotalDisponible;
+
+    TotalDisponible = 80000;
+
+    //
+    FILE *archivo_deposito, *archivo_retiro;
 
     //Creacion del socket
     socket_desc = socket(AF_INET , SOCK_STREAM , 0);
@@ -82,6 +91,20 @@ void main(int numArgs , char *args[]){
     //Acepta la conexion
     puts("Waiting for incoming connections...");
     c = sizeof(struct sockaddr_in);
+
+    //Creamos los archivos para guardar los logs de deposito y retiro
+    archivo_deposito = fopen(args[4],"a");
+
+    if (!(archivo_deposito)){
+        fprintf(stderr, "No se pudo crear el archivo de deposito.\n");
+    }
+
+    archivo_retiro = fopen(args[6],"a");
+
+    if (!(archivo_retiro)){
+        fprintf(stderr, "No se pudo crear el archivo de retiro.\n");
+    }
+
     while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
     {
         puts("Connection accepted");
@@ -115,15 +138,16 @@ void *connection_handler(void *socket_desc){
     int sock = *(int*)socket_desc;
     int read_size;
     char *message , client_message[2000];
+    int *monto;
 
     //Enviamos y recibimos mensajes del cliente
 
     message = "Entrada recibida \n";
 
-    while( (read_size = recv(sock , client_message , 2000 , 0)) > 0 )
+    while( (read_size = recv(sock , &monto , 1 , 0)) > 0 )
     {
 
-        write(sock , client_message , strlen(client_message));
+        write(sock , &monto , 1);
     }
 
     if(read_size == 0)
