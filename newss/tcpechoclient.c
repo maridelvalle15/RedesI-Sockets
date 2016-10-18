@@ -19,11 +19,8 @@
 #include <arpa/inet.h>
 #include <string.h>
 
-
-/*
-    Funcion principal
-*/
-void main(int numArgs , char *args[]){
+void main(int numArgs , char *args[])
+{
 
     // Verificamos los parametros de entrada.
     if (numArgs != 9){
@@ -43,12 +40,12 @@ void main(int numArgs , char *args[]){
         exit(1);
     }
 
-    // Variables para conexion
+    // Variables para el socket
     int sock, port;
     struct sockaddr_in server;
     char message[1000] , server_reply[2000];
 
-    //Variables del cajero
+    // Variables del cajero
     int TotalDisponible;
 
     TotalDisponible = 80000;
@@ -59,9 +56,10 @@ void main(int numArgs , char *args[]){
     {
         printf("Could not create socket");
     }
-    puts("Socket created");
+    printf("Socket created");
 
-    port = atoi(args[3]);
+    port = atoi(args[4]);
+
     server.sin_addr.s_addr = inet_addr(args[2]);
     server.sin_family = AF_INET;
     server.sin_port = htons(port);
@@ -70,34 +68,55 @@ void main(int numArgs , char *args[]){
     if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
     {
         perror("connect failed. Error");
-        return 1;
+        exit(1);
     }
 
-    puts("Connected\n");
+    printf("¡BIENVENIDO!\n");
 
     //Mantiene la conexion con el servidor
     while(1)
     {
-        printf("Enter message : ");
+
+        if (strcmp(args[6],"d") == 0){
+
+        printf("Ingrese el monto a depositar : ");
         scanf("%s" , message);
+
+        }
+
+        if (strcmp(args[6],"r") == 0){
+
+        printf("Ingrese el monto a retirar : ");
+        scanf("%s" , message);
+
+        int monto;
+
+        monto = atoi(message);
+
+        if (monto>3000){
+            printf("Ingrese un monto menor o igual a 3000.");
+            continue;
+        }
+
+        }
 
         //Envio de datos
         if( send(sock , message , strlen(message) , 0) < 0)
         {
-            puts("Send failed");
-            return 1;
+            printf("Send failed");
+            exit(1);
         }
 
         //Recepcion de respuesta del servidor
         if( recv(sock , server_reply , 2000 , 0) < 0)
         {
-            puts("recv failed");
+            printf("recv failed");
             break;
         }
 
-        puts("Server reply :");
-        puts(server_reply);
+        printf("Respuesta del servidor: %s \n",server_reply);
     }
 
     close(sock);
+
 }

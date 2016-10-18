@@ -88,10 +88,8 @@ void main(int numArgs , char *args[]){
 
         // Creamos los hilos para multiples conexiones
         pthread_t sniffer_thread;
-        new_sock = malloc(1);
-        *new_sock = client_sock;
 
-        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void*) new_sock) < 0)
+        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void *)&client_sock) < 0)
         {
             perror("could not create thread");
             exit(1);
@@ -119,11 +117,8 @@ void *connection_handler(void *socket_desc){
     char *message , client_message[2000];
 
     //Enviamos y recibimos mensajes del cliente
-    message = "Greetings! I am your connection handler\n";
-    write(sock , message , strlen(message));
 
-    message = "Now type something and i shall repeat what you type \n";
-    write(sock , message , strlen(message));
+    message = "Entrada recibida \n";
 
     while( (read_size = recv(sock , client_message , 2000 , 0)) > 0 )
     {
@@ -133,7 +128,7 @@ void *connection_handler(void *socket_desc){
 
     if(read_size == 0)
     {
-        puts("Client disconnected");
+        printf("Client disconnected");
         fflush(stdout);
     }
     else if(read_size == -1)
@@ -141,5 +136,5 @@ void *connection_handler(void *socket_desc){
         perror("recv failed");
     }
 
-    free(socket_desc);
+    close(sock);
 }
