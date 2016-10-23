@@ -145,7 +145,7 @@ void main(int numArgs , char *args[]){
             }
 
             // Chequeamos si la accion es de deposito
-            if ( buff_rcvd[0] == 'd'){
+            else if ( buff_rcvd[0] == 'd'){
                 write(client_sock , buff_rcvd , MAX_BUFF+1);
 
                 //Obtenemos la fecha y hora
@@ -172,6 +172,7 @@ void main(int numArgs , char *args[]){
         }
 
         fclose(archivo_retiro);
+        fclose(archivo_deposito);
         close(client_sock);
 
     }
