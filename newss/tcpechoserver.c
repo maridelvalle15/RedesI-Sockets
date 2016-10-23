@@ -17,13 +17,14 @@
 #include <unistd.h>
 #include <pthread.h>
 
-//Para crear hilos
+// Tamano maximo del buffer
+#define MAX_BUFF 6
+
+// Para crear hilos
 void *connection_handler(void *);
 
 
-/*
-    Funcion principal
-*/
+// Funcion principal
 void main(int numArgs , char *args[]){
 
     // Verificamos los parametros de entrada.
@@ -50,12 +51,13 @@ void main(int numArgs , char *args[]){
     int socket_desc , client_sock , c , *new_sock, port;
     struct sockaddr_in server , client;
 
+
     // Variables del cajero
     int TotalDisponible;
 
     TotalDisponible = 80000;
 
-    //
+    // Archivos de logs de deposito y retiro
     FILE *archivo_deposito, *archivo_retiro;
 
     //Creacion del socket
@@ -79,13 +81,9 @@ void main(int numArgs , char *args[]){
         perror("bind failed. Error");
         exit(1);
     }
-    puts("bind done");
 
     //Listen
     listen(socket_desc , 3);
-
-    puts("Waiting for incoming connections...");
-    c = sizeof(struct sockaddr_in);
 
 
     //Acepta la conexion
@@ -109,6 +107,8 @@ void main(int numArgs , char *args[]){
     {
         puts("Connection accepted");
 
+        /*
+
         // Creamos los hilos para multiples conexiones
         pthread_t sniffer_thread;
 
@@ -119,6 +119,61 @@ void main(int numArgs , char *args[]){
         }
 
         puts("Handler assigned");
+        */
+
+        int read_size;
+        char buff_rcvd[MAX_BUFF], HOUR[30];
+
+        //Enviamos y recibimos mensajes del cliente
+
+        while( (read_size = recv(client_sock , buff_rcvd , MAX_BUFF , 0)) > 0 )
+        {
+
+            // Chequeamos si la accion es de retiro
+            if ( buff_rcvd[0] == 'r'){
+                write(client_sock , buff_rcvd , MAX_BUFF+1);
+
+                //Obtenemos la fecha y hora
+                time_t now;
+                struct tm *ts;
+                struct tm *tsalida;
+                now = time(0);
+                ts = localtime(&now);
+                strftime(HOUR, sizeof(HOUR), "%a %Y-%m-%d %H:%M:%S %Z", ts);
+
+                fprintf(archivo_retiro, "Fecha y hora del retiro: %s\n",HOUR);
+            }
+
+            // Chequeamos si la accion es de deposito
+            if ( buff_rcvd[0] == 'd'){
+                write(client_sock , buff_rcvd , MAX_BUFF+1);
+
+                //Obtenemos la fecha y hora
+                time_t now;
+                struct tm *ts;
+                struct tm *tsalida;
+                now = time(0);
+                ts = localtime(&now);
+                strftime(HOUR, sizeof(HOUR), "%a %Y-%m-%d %H:%M:%S %Z", ts);
+
+                fprintf(archivo_deposito, "Fecha y hora del deposito: %s\n",HOUR);
+            }
+        }
+
+        // Verificaciones en caso que haya error al leer del socket
+        if(read_size == 0)
+        {
+            printf("Client disconnected");
+            fflush(stdout);
+        }
+        else if(read_size == -1)
+        {
+            perror("recv failed");
+        }
+
+        fclose(archivo_retiro);
+        close(client_sock);
+
     }
 
     if (client_sock < 0)
@@ -129,9 +184,7 @@ void main(int numArgs , char *args[]){
 }
 
 
-/*
-    Manejo de conexion con varios clientes a traves de hilos
-*/
+//Manejo de conexion con varios clientes a traves de hilos
 void *connection_handler(void *socket_desc){
 
     //Informacion del socket

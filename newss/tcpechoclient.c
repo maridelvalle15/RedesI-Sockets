@@ -19,6 +19,10 @@
 #include <arpa/inet.h>
 #include <string.h>
 
+#define MAX_BUFF 6
+
+
+//Funcion principal
 void main(int numArgs , char *args[])
 {
 
@@ -40,10 +44,9 @@ void main(int numArgs , char *args[])
         exit(1);
     }
 
-    // Variables para el socket
-    int sock, port;
+    int sock, port, contador_retiros;
     struct sockaddr_in server;
-    char message[1000] , server_reply[2000];
+    char message[1000] , server_reply[2000], buffer[3];
 
     //Creacion del socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
@@ -67,14 +70,17 @@ void main(int numArgs , char *args[])
     }
 
     printf("¡BIENVENIDO!\n");
+    contador_retiros = 0;
 
     //Mantiene la conexion con el servidor
     while(1)
     {
 
-        char server_reply[2000];
+        char server_reply[2000],buffer[MAX_BUFF];
         memset(server_reply,0,sizeof(server_reply)/sizeof(int));
+        memset(buffer,0,sizeof(buffer)/sizeof(int));
 
+        // Verificamos si la operacion a realizar es deposito
         if (strcmp(args[6],"d") == 0){
 
         printf("Ingrese el monto a depositar : ");
@@ -82,37 +88,53 @@ void main(int numArgs , char *args[])
 
         }
 
+        // Verificamos si la operacion a realizar es retiro
         if (strcmp(args[6],"r") == 0){
 
-        printf("Ingrese el monto a retirar : ");
-        scanf("%s" , message);
+            printf("Ingrese el monto a retirar : ");
+            scanf("%s" , message);
 
-        int monto;
+            // Recibimos el monto, y verificamos que no pase de 3000
+            int monto;
 
-        monto = atoi(message);
+            monto = atoi(message);
 
-        if (monto>3000){
-            printf("Ingrese un monto menor o igual a 3000.");
-            continue;
+            if (monto>3000){
+                printf("Ingrese un monto menor o igual a 3000.");
+                continue;
+            }
+
+            else{
+                contador_retiros ++;
+
+                if (contador_retiros > 3){
+                    printf("Ha excedido el numero maximo de retiros.\n");
+                    exit(1);
+                }
+            }
         }
 
-        }
+        // Copiamos la accion en el buffer
+        strcpy(buffer,args[6]);
+        // Copiamos el monto en el buffer
+        strcat(buffer," ");
+        strcat(buffer,message);
 
         //Envio de datos
-        if( send(sock , message , strlen(message) , 0) < 0)
+        if( send(sock , buffer , strlen(buffer)+1 , 0) < 0)
         {
-            printf("Send failed");
+            printf("Error al enviar monto");
             exit(1);
         }
 
-        //Recepcion de respuesta del servidor
         if( recv(sock , server_reply , 2000 , 0) < 0)
         {
             printf("recv failed");
             break;
         }
 
-        printf("Respuesta del servidor: %s \n",server_reply);
+        printf("Recibido del buffer: %s \n",server_reply);
+
     }
 
     close(sock);
