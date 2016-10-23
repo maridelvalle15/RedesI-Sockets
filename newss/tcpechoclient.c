@@ -19,7 +19,7 @@
 #include <arpa/inet.h>
 #include <string.h>
 
-#define MAX_BUFF 6
+#define MAX_BUFF 100
 
 
 //Funcion principal

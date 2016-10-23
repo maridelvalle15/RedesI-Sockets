@@ -18,7 +18,7 @@
 #include <pthread.h>
 
 // Tamano maximo del buffer
-#define MAX_BUFF 6
+#define MAX_BUFF 100
 
 // Para crear hilos
 void *connection_handler(void *);
@@ -141,7 +141,17 @@ void main(int numArgs , char *args[]){
                 ts = localtime(&now);
                 strftime(HOUR, sizeof(HOUR), "%a %Y-%m-%d %H:%M:%S %Z", ts);
 
-                fprintf(archivo_retiro, "Fecha y hora del retiro: %s\n",HOUR);
+                //Creamos el monto
+                int i, monto_decrementar;
+                char monto[100];
+                for (i = 2; i < MAX_BUFF; i = i + 1){
+                    monto[i-2] = buff_rcvd[i];
+                }
+
+                sscanf(monto, "%d", &monto_decrementar);
+                TotalDisponible = TotalDisponible - monto_decrementar;
+
+                fprintf(archivo_retiro, "Fecha y hora del retiro: %s, Monto: %s\n",HOUR,monto);
             }
 
             // Chequeamos si la accion es de deposito
@@ -156,9 +166,22 @@ void main(int numArgs , char *args[]){
                 ts = localtime(&now);
                 strftime(HOUR, sizeof(HOUR), "%a %Y-%m-%d %H:%M:%S %Z", ts);
 
-                fprintf(archivo_deposito, "Fecha y hora del deposito: %s\n",HOUR);
+                //Creamos el monto
+                int i, monto_incrementar;
+                char monto[100];
+                for (i = 2; i < MAX_BUFF; i = i + 1){
+                    monto[i-2] = buff_rcvd[i];
+                }
+
+                sscanf(monto, "%d", &monto_incrementar);
+                TotalDisponible = TotalDisponible + monto_incrementar;
+
+                fprintf(archivo_deposito, "Fecha y hora del deposito: %s, Monto: %s\n",HOUR,monto);
             }
         }
+
+        fprintf(archivo_retiro, "Total Disponible: %d\n",TotalDisponible);
+        fprintf(archivo_deposito, "Total Disponible: %d\n",TotalDisponible);
 
         // Verificaciones en caso que haya error al leer del socket
         if(read_size == 0)
