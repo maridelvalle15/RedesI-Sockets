@@ -36,12 +36,12 @@ void main(int numArgs , char *args[]){
         exit(1);
     }
 
-    char puerto, *b_deposito, *b_retiro;
+    char *puerto, *b_deposito, *b_retiro;
     int i;
 
     for (i = 1; i <= 5; i = i + 2){
         if (strcmp(args[i],"-l") == 0){
-            strcpy(&puerto,args[i+1]);
+            puerto = strdup(args[i+1]);
         }
         else if (strcmp(args[i],"-i") == 0){
             b_deposito = strdup(args[i+1]);
@@ -68,10 +68,7 @@ void main(int numArgs , char *args[]){
     struct sockaddr_in server , client;
 
 
-    // Variables del cajero
-    int TotalDisponible;
 
-    TotalDisponible = 80000;
 
     // Archivos de logs de deposito y retiro
     FILE *archivo_deposito, *archivo_retiro;
@@ -84,7 +81,7 @@ void main(int numArgs , char *args[]){
     }
     puts("Socket created");
 
-    port = atoi(&puerto);
+    port = atoi(puerto);
 
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -106,6 +103,7 @@ void main(int numArgs , char *args[]){
     puts("Waiting for incoming connections...");
     c = sizeof(struct sockaddr_in);
 
+    /*
     //Creamos los archivos para guardar los logs de deposito y retiro
     archivo_deposito = fopen(b_deposito,"a");
 
@@ -118,12 +116,13 @@ void main(int numArgs , char *args[]){
     if (!(archivo_retiro)){
         fprintf(stderr, "No se pudo crear el archivo de retiro.\n");
     }
+    */
 
     while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
     {
         puts("Connection accepted");
 
-        /*
+
 
         // Creamos los hilos para multiples conexiones
         pthread_t sniffer_thread;
@@ -135,84 +134,7 @@ void main(int numArgs , char *args[]){
         }
 
         puts("Handler assigned");
-        */
 
-        int read_size;
-        char buff_rcvd[MAX_BUFF], HOUR[30];
-
-        //Enviamos y recibimos mensajes del cliente
-
-        while( (read_size = recv(client_sock , buff_rcvd , MAX_BUFF , 0)) > 0 )
-        {
-
-            // Chequeamos si la accion es de retiro
-            if ( buff_rcvd[0] == 'r'){
-                write(client_sock , buff_rcvd , MAX_BUFF+1);
-
-                //Obtenemos la fecha y hora
-                time_t now;
-                struct tm *ts;
-                struct tm *tsalida;
-                now = time(0);
-                ts = localtime(&now);
-                strftime(HOUR, sizeof(HOUR), "%a %Y-%m-%d %H:%M:%S %Z", ts);
-
-                //Creamos el monto
-                int i, monto_decrementar;
-                char monto[100];
-                for (i = 2; i < MAX_BUFF; i = i + 1){
-                    monto[i-2] = buff_rcvd[i];
-                }
-
-                sscanf(monto, "%d", &monto_decrementar);
-                TotalDisponible = TotalDisponible - monto_decrementar;
-
-                fprintf(archivo_retiro, "Fecha y hora del retiro: %s, Monto: %s\n",HOUR,monto);
-            }
-
-            // Chequeamos si la accion es de deposito
-            else if ( buff_rcvd[0] == 'd'){
-                write(client_sock , buff_rcvd , MAX_BUFF+1);
-
-                //Obtenemos la fecha y hora
-                time_t now;
-                struct tm *ts;
-                struct tm *tsalida;
-                now = time(0);
-                ts = localtime(&now);
-                strftime(HOUR, sizeof(HOUR), "%a %Y-%m-%d %H:%M:%S %Z", ts);
-
-                //Creamos el monto
-                int i, monto_incrementar;
-                char monto[100];
-                for (i = 2; i < MAX_BUFF; i = i + 1){
-                    monto[i-2] = buff_rcvd[i];
-                }
-
-                sscanf(monto, "%d", &monto_incrementar);
-                TotalDisponible = TotalDisponible + monto_incrementar;
-
-                fprintf(archivo_deposito, "Fecha y hora del deposito: %s, Monto: %s\n",HOUR,monto);
-            }
-        }
-
-        fprintf(archivo_retiro, "Total Disponible: %d\n",TotalDisponible);
-        fprintf(archivo_deposito, "Total Disponible: %d\n",TotalDisponible);
-
-        // Verificaciones en caso que haya error al leer del socket
-        if(read_size == 0)
-        {
-            printf("Client disconnected");
-            fflush(stdout);
-        }
-        else if(read_size == -1)
-        {
-            perror("recv failed");
-        }
-
-        fclose(archivo_retiro);
-        fclose(archivo_deposito);
-        close(client_sock);
 
     }
 
@@ -233,16 +155,76 @@ void *connection_handler(void *socket_desc){
     char *message , client_message[2000];
     int *monto;
 
+    ////////////////////////////////////////////////////////////////
+
+    char buff_rcvd[MAX_BUFF], HOUR[30];
+
+    // Variables del cajero
+    int TotalDisponible;
+
+    TotalDisponible = 80000;
+
+
     //Enviamos y recibimos mensajes del cliente
 
-    message = "Entrada recibida \n";
-
-    while( (read_size = recv(sock , &monto , 1 , 0)) > 0 )
+    while( (read_size = recv(sock , buff_rcvd , MAX_BUFF , 0)) > 0 )
     {
 
-        write(sock , &monto , 1);
+        // Chequeamos si la accion es de retiro
+        if ( buff_rcvd[0] == 'r'){
+            write(sock , buff_rcvd , MAX_BUFF+1);
+
+            //Obtenemos la fecha y hora
+            time_t now;
+            struct tm *ts;
+            struct tm *tsalida;
+            now = time(0);
+            ts = localtime(&now);
+            strftime(HOUR, sizeof(HOUR), "%a %Y-%m-%d %H:%M:%S %Z", ts);
+
+            //Creamos el monto
+            int i, monto_decrementar;
+            char monto[100];
+            for (i = 2; i < MAX_BUFF; i = i + 1){
+                monto[i-2] = buff_rcvd[i];
+            }
+
+            sscanf(monto, "%d", &monto_decrementar);
+            TotalDisponible = TotalDisponible - monto_decrementar;
+
+            //fprintf(archivo_retiro, "Fecha y hora del retiro: %s, Monto: %s\n",HOUR,monto);
+        }
+
+        // Chequeamos si la accion es de deposito
+        else if ( buff_rcvd[0] == 'd'){
+            write(sock , buff_rcvd , MAX_BUFF+1);
+
+            //Obtenemos la fecha y hora
+            time_t now;
+            struct tm *ts;
+            struct tm *tsalida;
+            now = time(0);
+            ts = localtime(&now);
+            strftime(HOUR, sizeof(HOUR), "%a %Y-%m-%d %H:%M:%S %Z", ts);
+
+            //Creamos el monto
+            int i, monto_incrementar;
+            char monto[100];
+            for (i = 2; i < MAX_BUFF; i = i + 1){
+                monto[i-2] = buff_rcvd[i];
+            }
+
+            sscanf(monto, "%d", &monto_incrementar);
+            TotalDisponible = TotalDisponible + monto_incrementar;
+
+            //fprintf(archivo_deposito, "Fecha y hora del deposito: %s, Monto: %s\n",HOUR,monto);
+        }
     }
 
+    //fprintf(archivo_retiro, "Total Disponible: %d\n",TotalDisponible);
+    //fprintf(archivo_deposito, "Total Disponible: %d\n",TotalDisponible);
+
+    // Verificaciones en caso que haya error al leer del socket
     if(read_size == 0)
     {
         printf("Client disconnected");
@@ -253,5 +235,10 @@ void *connection_handler(void *socket_desc){
         perror("recv failed");
     }
 
+    //fclose(archivo_retiro);
+    //fclose(archivo_deposito);
     close(sock);
+
+    ////////////////////////////////////////////////////////////////
+
 }
