@@ -35,14 +35,30 @@ void main(int numArgs , char *args[]){
         printf("bsb_svr -l <puerto_bsb_svr> -i <bitácora_deposito> -o <bitácora_retiro>\n" );
         exit(1);
     }
-    if ((strcmp(args[1],"-l") != 0) || (strcmp(args[3],"-i") != 0) || (strcmp(args[5],"-o") != 0) ) {
-        printf("\nError de argumentos: Argumentos en orden equivocado.\n");
-        printf("Sintaxis: ");
-        printf("bsb_svr -l <puerto_bsb_svr> -i <bitácora_deposito> -o <bitácora_retiro>\n" );
-        exit(1);
+
+    char puerto, b_deposito, b_retiro;
+    int i;
+
+    for (i = 1; i <= 5; i = i + 2){
+        if (strcmp(args[i],"-l") == 0){
+            strcpy(&puerto,args[i+1]);
+        }
+        else if (strcmp(args[i],"-i") == 0){
+            strcpy(&b_deposito,args[i+1]);
+        }
+        else if (strcmp(args[i],"-o") == 0){
+            strcpy(&b_retiro,args[i+1]);
+        }
+        else{
+            printf("Error de argumentos: Argumentos equivocados.\n");
+            printf("Sintaxis: ");
+            printf("bsb_svr -l <puerto_bsb_svr> -i <bitácora_deposito> -o <bitácora_retiro>\n" );
+            exit(1);
+        }
     }
+
     // Verificamos que los archivos de entrada y salida no se llamen igual
-    if ((strcmp(args[4],args[6]) == 0)){
+    if ((strcmp(&b_deposito,&b_retiro) == 0)){
         printf("Error de argumentos: Los archivos de entrada y salida no deben llamarse igual.\n" );
         exit(1);
     }
@@ -68,7 +84,7 @@ void main(int numArgs , char *args[]){
     }
     puts("Socket created");
 
-    port = atoi(args[2]);
+    port = atoi(puerto);
 
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -91,13 +107,13 @@ void main(int numArgs , char *args[]){
     c = sizeof(struct sockaddr_in);
 
     //Creamos los archivos para guardar los logs de deposito y retiro
-    archivo_deposito = fopen(args[4],"a");
+    archivo_deposito = fopen(bitácora_deposito,"a");
 
     if (!(archivo_deposito)){
         fprintf(stderr, "No se pudo crear el archivo de deposito.\n");
     }
 
-    archivo_retiro = fopen(args[6],"a");
+    archivo_retiro = fopen(b_retiro,"a");
 
     if (!(archivo_retiro)){
         fprintf(stderr, "No se pudo crear el archivo de retiro.\n");
