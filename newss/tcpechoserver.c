@@ -36,7 +36,7 @@ void main(int numArgs , char *args[]){
         exit(1);
     }
 
-    char puerto, b_deposito, b_retiro;
+    char puerto, *b_deposito, *b_retiro;
     int i;
 
     for (i = 1; i <= 5; i = i + 2){
@@ -44,10 +44,10 @@ void main(int numArgs , char *args[]){
             strcpy(&puerto,args[i+1]);
         }
         else if (strcmp(args[i],"-i") == 0){
-            strcpy(&b_deposito,args[i+1]);
+            b_deposito = strdup(args[i+1]);
         }
         else if (strcmp(args[i],"-o") == 0){
-            strcpy(&b_retiro,args[i+1]);
+            b_retiro = strdup(args[i+1]);
         }
         else{
             printf("Error de argumentos: Argumentos equivocados.\n");
@@ -58,7 +58,7 @@ void main(int numArgs , char *args[]){
     }
 
     // Verificamos que los archivos de entrada y salida no se llamen igual
-    if ((strcmp(&b_deposito,&b_retiro) == 0)){
+    if ((strcmp(b_deposito,b_retiro) == 0)){
         printf("Error de argumentos: Los archivos de entrada y salida no deben llamarse igual.\n" );
         exit(1);
     }
@@ -84,7 +84,7 @@ void main(int numArgs , char *args[]){
     }
     puts("Socket created");
 
-    port = atoi(puerto);
+    port = atoi(&puerto);
 
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -107,7 +107,7 @@ void main(int numArgs , char *args[]){
     c = sizeof(struct sockaddr_in);
 
     //Creamos los archivos para guardar los logs de deposito y retiro
-    archivo_deposito = fopen(bitácora_deposito,"a");
+    archivo_deposito = fopen(b_deposito,"a");
 
     if (!(archivo_deposito)){
         fprintf(stderr, "No se pudo crear el archivo de deposito.\n");
