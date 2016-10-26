@@ -26,7 +26,7 @@ void *connection_handler(void *);
 void INThandler(int);
 
 // Variables del cajero
-int TotalDisponible;
+int TotalDisponible = 80000;
 
 char *b_deposito, *b_retiro;
 
@@ -131,10 +131,6 @@ void main(int numArgs , char *args[]){
     if (!(archivo_retiro)){
         fprintf(stderr, "No se pudo crear el archivo de retiro.\n");
     }
-
-    // El cajero se inicializa con un total disponible de 80000
-    TotalDisponible = 80000;
-
 
     while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
     {
@@ -241,6 +237,7 @@ void *connection_handler(void *datos){
             char monto[100];
             char id_usuario[100];
             // Creamos el monto
+            memset(monto,0,sizeof(monto)/sizeof(int));
             for (i = 2; i < MAX_BUFF; i = i + 1){
                 if (buff_rcvd[i] == ' '){
                     contador_espacios ++;
@@ -256,6 +253,7 @@ void *connection_handler(void *datos){
                 }
             }
             // Creamos el codigo usuario
+            memset(id_usuario,0,sizeof(id_usuario)/sizeof(int));
             for (i = j; i < MAX_BUFF; i = i + 1){
                 id_usuario[i-j] = buff_rcvd[i];
             }
@@ -287,6 +285,7 @@ void *connection_handler(void *datos){
             char monto[100];
             char id_usuario[100];
             // Creamos el monto
+            memset(monto,0,sizeof(monto)/sizeof(int));
             for (i = 2; i < MAX_BUFF; i = i + 1){
                 if (buff_rcvd[i] == ' '){
                     contador_espacios ++;
@@ -302,12 +301,15 @@ void *connection_handler(void *datos){
                 }
             }
             // Creamos el codigo usuario
+            memset(id_usuario,0,sizeof(id_usuario)/sizeof(int));
             for (i = j; i < MAX_BUFF; i = i + 1){
                 id_usuario[i-j] = buff_rcvd[i];
             }
 
             // Convertimos el monto de string a entero
+            printf("Monto recibido: %s\n",monto);
             sscanf(monto, "%d", &monto_incrementar);
+            printf("Monto transformado: %d\n",monto_incrementar);
             TotalDisponible = TotalDisponible - monto_incrementar;
 
             // Escribimos la informacion pertinente en el archivo
