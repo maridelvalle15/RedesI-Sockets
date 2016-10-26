@@ -37,6 +37,8 @@ void main(int numArgs , char *args[])
     char *ip, *puerto, *operacion, *id_usuario;
     int i;
 
+    // Los argumentos pueden ser ingresados en desorden
+    // Dependiendo del flag, los guardamos en una variable
     for (i = 1; i <= 7; i = i + 2){
         if (strcmp(args[i],"-d") == 0){
             ip = strdup(args[i+1]);
@@ -106,6 +108,8 @@ void main(int numArgs , char *args[])
         }
 
     printf("¡BIENVENIDO!\n");
+
+    // El cliente solo puede realizar 3 retiros por conexion
     contador_retiros = 0;
 
     //Mantiene la conexion con el servidor
@@ -135,12 +139,14 @@ void main(int numArgs , char *args[])
 
             monto = atoi(message);
 
+            // No se puede hacer retiro de un monto mayor a 3000
             if (monto>3000){
                 printf("Ingrese un monto menor o igual a 3000.");
                 continue;
             }
 
             else{
+                // Solo se pueden hacer 3 retiros por conexion
                 contador_retiros ++;
 
                 if (contador_retiros > 3){

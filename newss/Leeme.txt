@@ -34,6 +34,10 @@ Primeramente hacer:
         Para ejecutar el cliente:
         > ./bsb_cli -d <nombre_modulo_atencion> -p <puerto_bsb_svr> -c <op> -i <codigo_usuario>
 
+Los argumentos pueden ser ingresados en desorden, pero siempre de a pares: el flag acompañado de su valor.
+
 ______________________
 Limitaciones
 ======================
+Para el cliente:
+    - Sólo se pueden realizar 3 retiros por conexion

@@ -52,6 +52,8 @@ void main(int numArgs , char *args[]){
     char *puerto, *b_deposito, *b_retiro;
     int i;
 
+    // Los argumentos pueden ser ingresados en desorden
+    // Dependiendo del flag, los guardamos en una variable
     for (i = 1; i <= 5; i = i + 2){
         if (strcmp(args[i],"-l") == 0){
             puerto = strdup(args[i+1]);
@@ -126,6 +128,7 @@ void main(int numArgs , char *args[]){
         fprintf(stderr, "No se pudo crear el archivo de retiro.\n");
     }
 
+    // El cajero se inicializa con un total disponible de 80000
     TotalDisponible = 80000;
 
 
@@ -133,11 +136,10 @@ void main(int numArgs , char *args[]){
     {
         puts("Conexion realizada");
 
-
-
         // Creamos los hilos para multiples conexiones
         pthread_t sniffer_thread;
 
+        // Creamos la estructura para pasarle los datos a los hilos
         struct Datos datos;
         datos.socket = client_sock;
         datos.nombre_entrada = b_deposito;
@@ -161,22 +163,19 @@ void main(int numArgs , char *args[]){
 }
 
 
-//Manejo de conexion con varios clientes a traves de hilos
+// Manejo de conexion con varios clientes a traves de hilos
+// Recibe una estructura con los datos necesarios para realizar operaciones
 void *connection_handler(void *datos){
 
-    // Archivos de logs de deposito y retiro
-
-    struct Datos* mis_datos = (struct Datos*)datos;
-    //Informacion del socket
-    int sock = mis_datos->socket;
     int read_size, *monto;
     char *message , client_message[2000];
+    // Reasignamos los datos recibidos en la estructura a nuevas variables
+    struct Datos* mis_datos = (struct Datos*)datos;
+    int sock = mis_datos->socket;
     char *b_deposito = mis_datos->nombre_entrada;
     char *b_retiro = mis_datos->nombre_salida;
     FILE *archivo_deposito = mis_datos->archivo_deposito;
     FILE *archivo_retiro = mis_datos->archivo_retiro;
-
-    ////////////////////////////////////////////////////////////////
 
     char buff_rcvd[MAX_BUFF], HOUR[30];
 
@@ -210,9 +209,11 @@ void *connection_handler(void *datos){
                 monto[i-2] = buff_rcvd[i];
             }
 
+            // Convertimos el monto de string a entero
             sscanf(monto, "%d", &monto_decrementar);
             TotalDisponible = TotalDisponible - monto_decrementar;
 
+            // Escribimos la informacion pertinente en el archivo
             fprintf(archivo_retiro, "Fecha y hora del retiro: %s, Monto: %s\n",HOUR,monto);
         }
 
@@ -235,13 +236,16 @@ void *connection_handler(void *datos){
                 monto[i-2] = buff_rcvd[i];
             }
 
+            // Convertimos el monto de string a entero
             sscanf(monto, "%d", &monto_incrementar);
             TotalDisponible = TotalDisponible + monto_incrementar;
 
+            // Escribimos la informacion pertinente en el archivo
             fprintf(archivo_deposito, "Fecha y hora del deposito: %s, Monto: %s\n",HOUR,monto);
         }
     }
 
+    // Al final de la conexion, se escribe en cada archivo el total disponible actualizado
     fprintf(archivo_retiro, "Total Disponible: %d\n",TotalDisponible);
     fprintf(archivo_deposito, "Total Disponible: %d\n",TotalDisponible);
 
