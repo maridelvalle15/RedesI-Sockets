@@ -72,7 +72,7 @@ void main(int numArgs , char *args[])
     sock = socket(AF_INET , SOCK_STREAM , 0);
     if (sock == -1)
     {
-        printf("Could not create socket");
+        printf("Fallo en la creacion del socket");
     }
 
     port = atoi(puerto);
@@ -81,11 +81,11 @@ void main(int numArgs , char *args[])
     server.sin_family = AF_INET;
     server.sin_port = htons(port);
 
-    //Conexion al servidor
+    //El cliente tiene 3 intentos para conectarse al servidor
         for (i=1;i<=3;i=i+1){
             if (i==3){
                 if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0){
-                    perror("connect failed. Error");
+                    perror("Error al conectar. Error");
                     exit(1);
                 }
                 else{
@@ -165,7 +165,7 @@ void main(int numArgs , char *args[])
 
         if( recv(sock , server_reply , 2000 , 0) < 0)
         {
-            printf("recv failed");
+            printf("Fallo en recv");
             break;
         }
 

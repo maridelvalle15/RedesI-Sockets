@@ -26,19 +26,21 @@ void *connection_handler(void *);
 // Variables del cajero
 int TotalDisponible;
 
+// Estructura para pasar los datos requeridos a los hilos
 struct Datos {
-    char *nombre_entrada;
-    char *nombre_salida;
-    int socket;
-    FILE *archivo_deposito;
-    FILE *archivo_retiro;
+    char *nombre_entrada;   //nombre del archivo de entreda
+    char *nombre_salida;    //nombre del archivo de salida
+    int socket;             //socket
+    FILE *archivo_deposito; //archivo de deposito
+    FILE *archivo_retiro;   //archivo de retiro
 };
 
+
 // Funcion principal
+// Recibe el numero de argumentos y los argumentos ingresados por consola
 void main(int numArgs , char *args[]){
 
     // Verificamos los parametros de entrada.
-
     if (numArgs != 7){
         printf("Error de argumentos: numero equivocado de argumentos.\n");
         printf("Sintaxis: ");
@@ -46,6 +48,7 @@ void main(int numArgs , char *args[]){
         exit(1);
     }
 
+    // Variables para guardar los flags ingresados por consola
     char *puerto, *b_deposito, *b_retiro;
     int i;
 
@@ -84,9 +87,8 @@ void main(int numArgs , char *args[]){
     socket_desc = socket(AF_INET , SOCK_STREAM , 0);
     if (socket_desc == -1)
     {
-        printf("Could not create socket");
+        printf("Fallo en la creacion del socket");
     }
-    puts("Socket created");
 
     port = atoi(puerto);
 
@@ -98,7 +100,7 @@ void main(int numArgs , char *args[]){
     if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
     {
 
-        perror("bind failed. Error");
+        perror("Fallo en bind. Error");
         exit(1);
     }
 
@@ -107,7 +109,7 @@ void main(int numArgs , char *args[]){
 
 
     //Acepta la conexion
-    puts("Waiting for incoming connections...");
+    puts("Esperando conexiones entrantes...");
     c = sizeof(struct sockaddr_in);
 
 
@@ -129,7 +131,7 @@ void main(int numArgs , char *args[]){
 
     while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
     {
-        puts("Connection accepted");
+        puts("Conexion realizada");
 
 
 
@@ -145,18 +147,15 @@ void main(int numArgs , char *args[]){
 
         if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void *)&datos) < 0)
         {
-            perror("could not create thread");
+            perror("No fue posible crear el hilo");
             exit(1);
         }
-
-        puts("Handler assigned");
-
 
     }
 
     if (client_sock < 0)
     {
-        perror("accept failed");
+        perror("Fallo accept");
         exit(1);
     }
 }
@@ -249,12 +248,12 @@ void *connection_handler(void *datos){
     // Verificaciones en caso que haya error al leer del socket
     if(read_size == 0)
     {
-        printf("Client disconnected");
+        printf("Cliente desconectado");
         fflush(stdout);
     }
     else if(read_size == -1)
     {
-        perror("recv failed");
+        perror("Fallo en recv");
     }
 
     fclose(archivo_retiro);
