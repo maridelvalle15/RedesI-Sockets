@@ -62,11 +62,29 @@ void main(int numArgs , char *args[])
     server.sin_port = htons(port);
 
     //Conexion al servidor
-    if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
-    {
-        perror("connect failed. Error");
-        exit(1);
-    }
+        int i;
+        for (i=1;i<=3;i=i+1){
+            if (i==3){
+                if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0){
+                    perror("connect failed. Error");
+                    exit(1);
+                }
+                else{
+                    break;
+                }
+            }
+            else{
+                if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0){
+                    printf("No se pudo conectar al servidor. ");
+                    printf("Pulse para volver a intentarlo...\n");
+                    fflush(stdin);
+                    getchar();
+                }
+                else{
+                    break;
+                }
+            }
+        }
 
     printf("¡BIENVENIDO!\n");
     contador_retiros = 0;
