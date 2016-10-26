@@ -23,6 +23,11 @@
 // Para crear hilos
 void *connection_handler(void *);
 
+struct Datos {
+    char *nombre_entrada;
+    char *nombre_salida;
+    int socket;
+};
 
 // Funcion principal
 void main(int numArgs , char *args[]){
@@ -118,6 +123,8 @@ void main(int numArgs , char *args[]){
     }
     */
 
+
+
     while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
     {
         puts("Connection accepted");
@@ -127,7 +134,10 @@ void main(int numArgs , char *args[]){
         // Creamos los hilos para multiples conexiones
         pthread_t sniffer_thread;
 
-        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void *)&client_sock) < 0)
+        struct Datos datos;
+        datos.socket = client_sock;
+
+        if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void *)&datos) < 0)
         {
             perror("could not create thread");
             exit(1);
@@ -147,10 +157,11 @@ void main(int numArgs , char *args[]){
 
 
 //Manejo de conexion con varios clientes a traves de hilos
-void *connection_handler(void *socket_desc){
+void *connection_handler(void *datos){
 
+    struct Datos* mis_datos = (struct Datos*)datos;
     //Informacion del socket
-    int sock = *(int*)socket_desc;
+    int sock = mis_datos->socket;
     int read_size;
     char *message , client_message[2000];
     int *monto;
@@ -240,5 +251,4 @@ void *connection_handler(void *socket_desc){
     close(sock);
 
     ////////////////////////////////////////////////////////////////
-
 }
