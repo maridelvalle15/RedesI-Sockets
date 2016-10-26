@@ -20,7 +20,7 @@ Archivos entregados
 ______________________
 Qué hace
 ======================
-    Se encarga de crear un servidor para un sistema de cajeros. El servidor (cajero) inicializa con un total disponible de 80000. El usuario (cliente) ingresa la operación que desea realizar junto con un código de usuario, el servidor procesa la solicitud y emite la respuesta pertinente. En caso de tratarse de un retiro, el servidor decrementa el total disponible, y en caso de llegar a ser menor a 5000, emite un mensaje en el cajero y al usuario que el total disponible es menor a 5000.
+    Se encarga de crear un servidor para un sistema de cajeros. El servidor (cajero) inicializa con un total disponible de 80000. El usuario (cliente) ingresa la operación que desea realizar junto con un código de usuario, el servidor procesa la solicitud y emite la respuesta pertinente. En caso de tratarse de un retiro, el servidor decrementa el total disponible, y en caso de llegar a ser menor a 5000, emite un mensaje en el servidor y en el cliente que el total disponible es menor a 5000. Si cuando el cliente se conecta el cajero tiene menos de 5000, recibe un mensaje de alerta. Si el cliente desea retirar mas de lo que el cajero posee, el cajero le envia un mensaje diciendo que no es posible realizar la operacion.
 
 ______________________
 Ejecución
