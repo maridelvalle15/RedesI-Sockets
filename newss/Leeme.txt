@@ -41,3 +41,6 @@ Limitaciones
 ======================
 Para el cliente:
     - Sólo se pueden realizar 3 retiros por conexion
+
+Para el servidor:
+    - Para hacer cierre de caja, se debe ejecutar ctrl+C.
