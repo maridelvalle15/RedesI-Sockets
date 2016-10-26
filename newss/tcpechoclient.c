@@ -68,7 +68,7 @@ void main(int numArgs , char *args[])
 
     int sock, port, contador_retiros;
     struct sockaddr_in server;
-    char message[1000] , server_reply[2000], buffer[3];
+    char message[1000] , server_reply[2000];
 
     //Creacion del socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
@@ -108,6 +108,14 @@ void main(int numArgs , char *args[])
         }
 
     printf("¡BIENVENIDO!\n");
+
+    char monto_restante[100];
+    if( recv(sock , monto_restante , 100 , 0) < 0)
+        {
+            printf("Fallo al recibir monto restante");
+            exit(1);
+        }
+    printf("Monto restante: %s\n",monto_restante);
 
     // El cliente solo puede realizar 3 retiros por conexion
     contador_retiros = 0;
@@ -169,7 +177,7 @@ void main(int numArgs , char *args[])
         //Envio de datos
         if( send(sock , buffer , strlen(buffer)+1 , 0) < 0)
         {
-            printf("Error al enviar monto");
+            printf("Error al enviar datos");
             exit(1);
         }
 
@@ -188,7 +196,7 @@ void main(int numArgs , char *args[])
         printf(" ---------------------------- \n");
         printf("|                             \n");
         printf("|                             \n");
-        printf("| Recibido del buffer: %s \n",server_reply);
+        printf("| Hora: %s \n",server_reply);
         printf("|                             \n");
         printf("|                             \n");
         printf(" ---------------------------- \n");

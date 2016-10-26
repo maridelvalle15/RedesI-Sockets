@@ -203,7 +203,6 @@ void  INThandler(int sig)
 void *connection_handler(void *datos){
 
     int read_size, *monto;
-    char *message , client_message[2000];
     // Reasignamos los datos recibidos en la estructura a nuevas variables
     struct Datos* mis_datos = (struct Datos*)datos;
     int sock = mis_datos->socket;
@@ -212,12 +211,14 @@ void *connection_handler(void *datos){
     FILE *archivo_deposito = mis_datos->archivo_deposito;
     FILE *archivo_retiro = mis_datos->archivo_retiro;
 
-    char buff_rcvd[MAX_BUFF], HOUR[30];
+    char buff_rcvd[MAX_BUFF], buff_snt[MAX_BUFF], HOUR[30], monto_restante[100];
 
     archivo_deposito = fopen(b_deposito,"a");
     archivo_retiro = fopen(b_retiro,"a");
 
     //Enviamos y recibimos mensajes del cliente
+    sprintf(monto_restante, "%d", TotalDisponible);
+    write(sock, monto_restante, 100);
 
     while( (read_size = recv(sock , buff_rcvd , MAX_BUFF , 0)) > 0 )
     {
@@ -227,7 +228,6 @@ void *connection_handler(void *datos){
         }
         // Chequeamos si la accion es de retiro
         if ( buff_rcvd[0] == 'r'){
-            write(sock , buff_rcvd , MAX_BUFF+1);
 
             //Obtenemos la fecha y hora
             time_t now;
@@ -271,10 +271,13 @@ void *connection_handler(void *datos){
             TotalDisponible = TotalDisponible - monto_decrementar;
 
             // Escribimos la informacion pertinente en el archivo
-            fprintf(archivo_retiro, "Fecha y hora del retiro: %s, Monto: %s, Codigo de usuario: %s\n",HOUR,monto,id_usuario);
+            fprintf(archivo_retiro, "Fecha y hora del retiro: %s, Monto: %s, Codigo de usuario: %s\n", HOUR, monto, id_usuario);
 
             // Enviamos respuesta al usuario de su solicitud
-            write(sock , buff_rcvd , MAX_BUFF+1);
+            memset(buff_snt, 0, sizeof(buff_snt)/sizeof(int));
+            // Copiamos la accion en el buffer
+            strcpy(buff_snt, HOUR);
+            write(sock, buff_snt, MAX_BUFF+1);
 
         }
 
@@ -293,8 +296,7 @@ void *connection_handler(void *datos){
             // Variables para la lectura del buffer
             int i, j, monto_incrementar, contador_espacios;
             contador_espacios = 1;
-            char monto[100];
-            char id_usuario[100];
+            char monto[100], id_usuario[100];
             // Creamos el monto
             memset(monto,0,sizeof(monto)/sizeof(int));
             for (i = 2; i < MAX_BUFF; i = i + 1){
@@ -326,7 +328,10 @@ void *connection_handler(void *datos){
             fprintf(archivo_deposito, "Fecha y hora del deposito: %s, Monto: %s, Codigo de usuario: %s\n",HOUR,monto,id_usuario);
 
             // Enviamos respuesta al usuario de su solicitud
-            write(sock , buff_rcvd , MAX_BUFF+1);
+            memset(buff_snt,0,sizeof(buff_snt)/sizeof(int));
+            // Copiamos la accion en el buffer
+            strcpy(buff_snt,HOUR);
+            write(sock , buff_snt , MAX_BUFF+1);
 
         }
     }
@@ -339,7 +344,7 @@ void *connection_handler(void *datos){
     }
     else if(read_size == -1)
     {
-        perror("Fallo en recv\n");
+        perror("Fallo al recibir datos del cliente\n");
     }
 
     fclose(archivo_retiro);
