@@ -162,6 +162,9 @@ void main(int numArgs , char *args[])
         // Copiamos el monto en el buffer
         strcat(buffer," ");
         strcat(buffer,message);
+        // Copiamos el codigo del usuario en el buffer
+        strcat(buffer," ");
+        strcat(buffer,id_usuario);
 
         //Envio de datos
         if( send(sock , buffer , strlen(buffer)+1 , 0) < 0)

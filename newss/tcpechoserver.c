@@ -202,11 +202,31 @@ void *connection_handler(void *datos){
             ts = localtime(&now);
             strftime(HOUR, sizeof(HOUR), "%a %Y-%m-%d %H:%M:%S %Z", ts);
 
-            //Creamos el monto
-            int i, monto_decrementar;
+            // Leemos del buffer
+            // Variables para la lectura del buffer
+            int i, j, monto_decrementar, contador_espacios;
+            contador_espacios = 1;
             char monto[100];
+            char id_usuario[100];
+            // Creamos el monto
             for (i = 2; i < MAX_BUFF; i = i + 1){
-                monto[i-2] = buff_rcvd[i];
+                if (buff_rcvd[i] == ' '){
+                    contador_espacios ++;
+                }
+                else{
+                    if (contador_espacios == 1){
+                        monto[i-2] = buff_rcvd[i];
+                    }
+                    else{
+                        j = i;
+                        break;
+                    }
+                }
+            }
+            // Creamos el codigo usuario
+            for (i = j; i < MAX_BUFF; i = i + 1){
+                id_usuario[i-j] = buff_rcvd[i];
+                printf("%s\n",&id_usuario[i-j]);
             }
 
             // Convertimos el monto de string a entero
@@ -214,7 +234,7 @@ void *connection_handler(void *datos){
             TotalDisponible = TotalDisponible - monto_decrementar;
 
             // Escribimos la informacion pertinente en el archivo
-            fprintf(archivo_retiro, "Fecha y hora del retiro: %s, Monto: %s\n",HOUR,monto);
+            fprintf(archivo_retiro, "Fecha y hora del retiro: %s, Monto: %s, Codigo de usuario: %s\n",HOUR,monto,id_usuario);
         }
 
         // Chequeamos si la accion es de deposito
@@ -229,19 +249,39 @@ void *connection_handler(void *datos){
             ts = localtime(&now);
             strftime(HOUR, sizeof(HOUR), "%a %Y-%m-%d %H:%M:%S %Z", ts);
 
-            //Creamos el monto
-            int i, monto_incrementar;
+            // Leemos del buffer
+            // Variables para la lectura del buffer
+            int i, j, monto_incrementar, contador_espacios;
+            contador_espacios = 1;
             char monto[100];
+            char id_usuario[100];
+            // Creamos el monto
             for (i = 2; i < MAX_BUFF; i = i + 1){
-                monto[i-2] = buff_rcvd[i];
+                if (buff_rcvd[i] == ' '){
+                    contador_espacios ++;
+                }
+                else{
+                    if (contador_espacios == 1){
+                        monto[i-2] = buff_rcvd[i];
+                    }
+                    else{
+                        j = i;
+                        break;
+                    }
+                }
+            }
+            // Creamos el codigo usuario
+            for (i = j; i < MAX_BUFF; i = i + 1){
+                id_usuario[i-j] = buff_rcvd[i];
+                printf("%s\n",&id_usuario[i-j]);
             }
 
             // Convertimos el monto de string a entero
             sscanf(monto, "%d", &monto_incrementar);
-            TotalDisponible = TotalDisponible + monto_incrementar;
+            TotalDisponible = TotalDisponible - monto_incrementar;
 
             // Escribimos la informacion pertinente en el archivo
-            fprintf(archivo_deposito, "Fecha y hora del deposito: %s, Monto: %s\n",HOUR,monto);
+            fprintf(archivo_deposito, "Fecha y hora del deposito: %s, Monto: %s, Codigo de usuario: %s\n",HOUR,monto,id_usuario);
         }
     }
 
