@@ -77,7 +77,7 @@ void main(int numArgs , char *args[])
 
     port = atoi(puerto);
 
-    server.sin_addr.s_addr = inet_addr(args[2]);
+    server.sin_addr.s_addr = inet_addr(ip);
     server.sin_family = AF_INET;
     server.sin_port = htons(port);
 
@@ -117,7 +117,7 @@ void main(int numArgs , char *args[])
         memset(buffer,0,sizeof(buffer)/sizeof(int));
 
         // Verificamos si la operacion a realizar es deposito
-        if (strcmp(args[6],"d") == 0){
+        if (strcmp(operacion,"d") == 0){
 
         printf("Ingrese el monto a depositar : ");
         scanf("%s" , message);
@@ -125,7 +125,7 @@ void main(int numArgs , char *args[])
         }
 
         // Verificamos si la operacion a realizar es retiro
-        if (strcmp(args[6],"r") == 0){
+        if (strcmp(operacion,"r") == 0){
 
             printf("Ingrese el monto a retirar : ");
             scanf("%s" , message);
@@ -151,7 +151,7 @@ void main(int numArgs , char *args[])
         }
 
         // Copiamos la accion en el buffer
-        strcpy(buffer,args[6]);
+        strcpy(buffer,operacion);
         // Copiamos el monto en el buffer
         strcat(buffer," ");
         strcat(buffer,message);
