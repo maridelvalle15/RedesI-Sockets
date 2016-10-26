@@ -27,6 +27,8 @@ struct Datos {
     char *nombre_entrada;
     char *nombre_salida;
     int socket;
+    FILE *archivo_deposito;
+    FILE *archivo_retiro;
 };
 
 // Funcion principal
@@ -72,9 +74,6 @@ void main(int numArgs , char *args[]){
     int socket_desc , client_sock , c , *new_sock, port;
     struct sockaddr_in server , client;
 
-
-
-
     // Archivos de logs de deposito y retiro
     FILE *archivo_deposito, *archivo_retiro;
 
@@ -108,7 +107,7 @@ void main(int numArgs , char *args[]){
     puts("Waiting for incoming connections...");
     c = sizeof(struct sockaddr_in);
 
-    /*
+
     //Creamos los archivos para guardar los logs de deposito y retiro
     archivo_deposito = fopen(b_deposito,"a");
 
@@ -121,7 +120,7 @@ void main(int numArgs , char *args[]){
     if (!(archivo_retiro)){
         fprintf(stderr, "No se pudo crear el archivo de retiro.\n");
     }
-    */
+
 
 
 
@@ -136,6 +135,10 @@ void main(int numArgs , char *args[]){
 
         struct Datos datos;
         datos.socket = client_sock;
+        datos.nombre_entrada = b_deposito;
+        datos.nombre_salida = b_retiro;
+        datos.archivo_deposito = archivo_deposito;
+        datos.archivo_retiro = archivo_retiro;
 
         if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void *)&datos) < 0)
         {
@@ -159,12 +162,17 @@ void main(int numArgs , char *args[]){
 //Manejo de conexion con varios clientes a traves de hilos
 void *connection_handler(void *datos){
 
+    // Archivos de logs de deposito y retiro
+
     struct Datos* mis_datos = (struct Datos*)datos;
     //Informacion del socket
     int sock = mis_datos->socket;
-    int read_size;
+    int read_size, *monto;
     char *message , client_message[2000];
-    int *monto;
+    char *b_deposito = mis_datos->nombre_entrada;
+    char *b_retiro = mis_datos->nombre_salida;
+    FILE *archivo_deposito = mis_datos->archivo_deposito;
+    FILE *archivo_retiro = mis_datos->archivo_retiro;
 
     ////////////////////////////////////////////////////////////////
 
@@ -203,7 +211,7 @@ void *connection_handler(void *datos){
             sscanf(monto, "%d", &monto_decrementar);
             TotalDisponible = TotalDisponible - monto_decrementar;
 
-            //fprintf(archivo_retiro, "Fecha y hora del retiro: %s, Monto: %s\n",HOUR,monto);
+            fprintf(archivo_retiro, "Fecha y hora del retiro: %s, Monto: %s\n",HOUR,monto);
         }
 
         // Chequeamos si la accion es de deposito
@@ -228,12 +236,12 @@ void *connection_handler(void *datos){
             sscanf(monto, "%d", &monto_incrementar);
             TotalDisponible = TotalDisponible + monto_incrementar;
 
-            //fprintf(archivo_deposito, "Fecha y hora del deposito: %s, Monto: %s\n",HOUR,monto);
+            fprintf(archivo_deposito, "Fecha y hora del deposito: %s, Monto: %s\n",HOUR,monto);
         }
     }
 
-    //fprintf(archivo_retiro, "Total Disponible: %d\n",TotalDisponible);
-    //fprintf(archivo_deposito, "Total Disponible: %d\n",TotalDisponible);
+    fprintf(archivo_retiro, "Total Disponible: %d\n",TotalDisponible);
+    fprintf(archivo_deposito, "Total Disponible: %d\n",TotalDisponible);
 
     // Verificaciones en caso que haya error al leer del socket
     if(read_size == 0)
@@ -246,8 +254,8 @@ void *connection_handler(void *datos){
         perror("recv failed");
     }
 
-    //fclose(archivo_retiro);
-    //fclose(archivo_deposito);
+    fclose(archivo_retiro);
+    fclose(archivo_deposito);
     close(sock);
 
     ////////////////////////////////////////////////////////////////
