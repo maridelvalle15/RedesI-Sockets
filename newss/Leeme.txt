@@ -1,0 +1,39 @@
+======================================================
+Redes de Computadoras I. Asignación I. Sockets
+Universidad Simón Bolívar.
+(30 de octubre, 2016)
+------------------------------------------------------
+
+______________________
+Autores
+======================
+Mathieu E. De Valery F. 10-10193
+Marisela A. Del Valle M. 11-10267
+
+______________________
+Archivos entregados
+======================
+1- Makefile: Contiene la especificación para la compilaciónd el programa.
+2- tcpechoclient.c: Script principal encargado de crear el socket para comunicarse con el servidor.
+3- tcpechoserver.c: Script principal encargado de crear el socket para comunicarse con el cliente.
+
+______________________
+Qué hace
+======================
+    Se encarga de crear un servidor para un sistema de cajeros. El servidor (cajero) inicializa con un total disponible de 80000. El usuario (cliente) ingresa la operación que desea realizar junto con un código de usuario, el servidor procesa la solicitud y emite la respuesta pertinente. En caso de tratarse de un retiro, el servidor decrementa el total disponible, y en caso de llegar a ser menor a 5000, emite un mensaje en el cajero y al usuario que el total disponible es menor a 5000.
+
+______________________
+Ejecución
+======================
+Primeramente hacer:
+        > make
+    luego:
+        Para ejecutar el servidor:
+        > ./bsb_svr -l <puerto_bsb_svr> -i <bitácora_deposito> -o <bitácora_retiro>
+
+        Para ejecutar el cliente:
+        > ./bsb_cli -d <nombre_modulo_atencion> -p <puerto_bsb_svr> -c <op> -i <codigo_usuario>
+
+______________________
+Limitaciones
+======================
