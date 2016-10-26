@@ -19,6 +19,7 @@
 #include <arpa/inet.h>
 #include <string.h>
 
+// Tamano maximo del buffer
 #define MAX_BUFF 100
 
 
@@ -31,15 +32,34 @@ void main(int numArgs , char *args[])
         printf("Error de argumentos: numero equivocado de argumentos.\n");
         exit(1);
     }
-    if ((strcmp(args[1],"-d") != 0) || (strcmp(args[3],"-p") != 0) || (strcmp(args[5],"-c") != 0) ||
-        (strcmp(args[7],"-i") != 0)) {
-        printf("\nError de argumentos: Argumentos en orden equivocado.\n");
-        printf("Sintaxis: ");
-        printf("bsb_cli -d <nombre_modulo_atencion> -p <puerto_bsb_svr> -c <op> -i <codigo_usuario>\n" );
-        exit(1);
+
+    // Variables para guardar los flags ingresados por consola
+    char *ip, *puerto, *operacion, *id_usuario;
+    int i;
+
+    for (i = 1; i <= 7; i = i + 2){
+        if (strcmp(args[i],"-d") == 0){
+            ip = strdup(args[i+1]);
+        }
+        else if (strcmp(args[i],"-p") == 0){
+            puerto = strdup(args[i+1]);
+        }
+        else if (strcmp(args[i],"-c") == 0){
+            operacion = strdup(args[i+1]);
+        }
+        else if (strcmp(args[i],"-i") == 0){
+            id_usuario = strdup(args[i+1]);
+        }
+        else{
+            printf("Error de argumentos: Argumentos equivocados.\n");
+            printf("Sintaxis: ");
+            printf("bsb_cli -d <nombre_modulo_atencion> -p <puerto_bsb_svr> -c <op> -i <codigo_usuario>\n" );
+            exit(1);
+        }
     }
+
     // Verificamos que la operacion sea de retiro (r) o deposito (d)
-    if ((strcmp(args[6],"d") != 0) && (strcmp(args[6],"r") != 0)){
+    if ((strcmp(operacion,"d") != 0) && (strcmp(operacion,"r") != 0)){
         printf("\nError de argumentos: Solo son operaciones validas 'd' o 'r'.\n");
         exit(1);
     }
@@ -55,14 +75,13 @@ void main(int numArgs , char *args[])
         printf("Could not create socket");
     }
 
-    port = atoi(args[4]);
+    port = atoi(puerto);
 
     server.sin_addr.s_addr = inet_addr(args[2]);
     server.sin_family = AF_INET;
     server.sin_port = htons(port);
 
     //Conexion al servidor
-        int i;
         for (i=1;i<=3;i=i+1){
             if (i==3){
                 if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0){
