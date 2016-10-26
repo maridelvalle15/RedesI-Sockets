@@ -54,7 +54,6 @@ void main(int numArgs , char *args[])
     {
         printf("Could not create socket");
     }
-    printf("Socket created");
 
     port = atoi(args[4]);
 

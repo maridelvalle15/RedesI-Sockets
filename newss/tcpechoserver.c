@@ -143,11 +143,6 @@ void main(int numArgs , char *args[]){
         datos.archivo_deposito = archivo_deposito;
         datos.archivo_retiro = archivo_retiro;
 
-        if (TotalDisponible < 5000){
-            puts("Total disponible menor a 5000");
-            exit(1);
-        }
-
         if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void *)&datos) < 0)
         {
             perror("could not create thread");
@@ -196,7 +191,6 @@ void *connection_handler(void *datos){
 
         if (TotalDisponible < 5000){
             puts("Total disponible menor a 5000");
-            exit(1);
         }
         // Chequeamos si la accion es de retiro
         if ( buff_rcvd[0] == 'r'){
