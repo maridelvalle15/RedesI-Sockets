@@ -23,11 +23,12 @@
 
 // Para crear hilos
 void *connection_handler(void *);
+// Para captar ctrl+C
 void INThandler(int);
 
-// Variables del cajero
+// Total disponible del cajero
 int TotalDisponible = 80000;
-
+// Nombres de los archivos de deposito y retiro
 char *b_deposito, *b_retiro;
 
 // Estructura para pasar los datos requeridos a los hilos
@@ -136,6 +137,7 @@ void main(int numArgs , char *args[]){
     {
         puts("Conexion realizada");
 
+        // Señal que detecta si se ejecuta ctrl+C
         signal(SIGINT, INThandler);
 
         // Creamos los hilos para multiples conexiones
@@ -166,6 +168,7 @@ void main(int numArgs , char *args[]){
 }
 
 
+// Procedimiento para captar ctrl+C y realizar el cierre de caja
 void  INThandler(int sig)
 {
      char  c;
@@ -184,6 +187,10 @@ void  INThandler(int sig)
 
     fclose(archivo_retiro);
     fclose(archivo_deposito);
+
+    printf("\n");
+    printf("Cierre de caja realizado.\n");
+    printf("\n");
 
     exit(0);
 
@@ -260,15 +267,19 @@ void *connection_handler(void *datos){
 
             // Convertimos el monto de string a entero
             sscanf(monto, "%d", &monto_decrementar);
+            // Decrementamos el total disponible
             TotalDisponible = TotalDisponible - monto_decrementar;
 
             // Escribimos la informacion pertinente en el archivo
             fprintf(archivo_retiro, "Fecha y hora del retiro: %s, Monto: %s, Codigo de usuario: %s\n",HOUR,monto,id_usuario);
+
+            // Enviamos respuesta al usuario de su solicitud
+            write(sock , buff_rcvd , MAX_BUFF+1);
+
         }
 
         // Chequeamos si la accion es de deposito
         else if ( buff_rcvd[0] == 'd'){
-            write(sock , buff_rcvd , MAX_BUFF+1);
 
             //Obtenemos la fecha y hora
             time_t now;
@@ -307,13 +318,16 @@ void *connection_handler(void *datos){
             }
 
             // Convertimos el monto de string a entero
-            printf("Monto recibido: %s\n",monto);
             sscanf(monto, "%d", &monto_incrementar);
-            printf("Monto transformado: %d\n",monto_incrementar);
-            TotalDisponible = TotalDisponible - monto_incrementar;
+            // Incrementamos el total disponible
+            TotalDisponible = TotalDisponible + monto_incrementar;
 
             // Escribimos la informacion pertinente en el archivo
             fprintf(archivo_deposito, "Fecha y hora del deposito: %s, Monto: %s, Codigo de usuario: %s\n",HOUR,monto,id_usuario);
+
+            // Enviamos respuesta al usuario de su solicitud
+            write(sock , buff_rcvd , MAX_BUFF+1);
+
         }
     }
 
