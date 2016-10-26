@@ -23,6 +23,9 @@
 // Para crear hilos
 void *connection_handler(void *);
 
+// Variables del cajero
+int TotalDisponible;
+
 struct Datos {
     char *nombre_entrada;
     char *nombre_salida;
@@ -121,7 +124,7 @@ void main(int numArgs , char *args[]){
         fprintf(stderr, "No se pudo crear el archivo de retiro.\n");
     }
 
-
+    TotalDisponible = 80000;
 
 
     while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
@@ -139,6 +142,11 @@ void main(int numArgs , char *args[]){
         datos.nombre_salida = b_retiro;
         datos.archivo_deposito = archivo_deposito;
         datos.archivo_retiro = archivo_retiro;
+
+        if (TotalDisponible < 5000){
+            puts("Total disponible menor a 5000");
+            exit(1);
+        }
 
         if( pthread_create( &sniffer_thread , NULL ,  connection_handler , (void *)&datos) < 0)
         {
@@ -178,17 +186,18 @@ void *connection_handler(void *datos){
 
     char buff_rcvd[MAX_BUFF], HOUR[30];
 
-    // Variables del cajero
-    int TotalDisponible;
-
-    TotalDisponible = 80000;
-
+    archivo_deposito = fopen(b_deposito,"a");
+    archivo_retiro = fopen(b_retiro,"a");
 
     //Enviamos y recibimos mensajes del cliente
 
     while( (read_size = recv(sock , buff_rcvd , MAX_BUFF , 0)) > 0 )
     {
 
+        if (TotalDisponible < 5000){
+            puts("Total disponible menor a 5000");
+            exit(1);
+        }
         // Chequeamos si la accion es de retiro
         if ( buff_rcvd[0] == 'r'){
             write(sock , buff_rcvd , MAX_BUFF+1);
