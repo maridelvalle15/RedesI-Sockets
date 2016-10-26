@@ -141,7 +141,8 @@ void main(int numArgs , char *args[])
 
             // No se puede hacer retiro de un monto mayor a 3000
             if (monto>3000){
-                printf("Ingrese un monto menor o igual a 3000.");
+                printf("\n");
+                printf("Ingrese un monto menor o igual a 3000.\n");
                 continue;
             }
 
@@ -175,7 +176,21 @@ void main(int numArgs , char *args[])
             break;
         }
 
-        printf("Recibido del buffer: %s \n",server_reply);
+        // Se imprime ticket con verificacion de la operacion
+        printf("\n");
+        printf("**********************************\n");
+        printf("Transaccion exitosa\n");
+        printf("Datos de su transaccion\n");
+        printf("\n");
+        printf(" ---------------------------- \n");
+        printf("|                             \n");
+        printf("|                             \n");
+        printf("| Recibido del buffer: %s \n",server_reply);
+        printf("|                             \n");
+        printf("|                             \n");
+        printf(" ---------------------------- \n");
+        printf("**********************************\n");
+        printf("\n");
 
     }
 
