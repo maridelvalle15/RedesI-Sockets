@@ -16,15 +16,19 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <pthread.h>
+#include  <signal.h>
 
 // Tamano maximo del buffer
 #define MAX_BUFF 100
 
 // Para crear hilos
 void *connection_handler(void *);
+void INThandler(int);
 
 // Variables del cajero
 int TotalDisponible;
+
+char *b_deposito, *b_retiro;
 
 // Estructura para pasar los datos requeridos a los hilos
 struct Datos {
@@ -43,13 +47,13 @@ void main(int numArgs , char *args[]){
     // Verificamos los parametros de entrada.
     if (numArgs != 7){
         printf("Error de argumentos: numero equivocado de argumentos.\n");
-        printf("Sintaxis: ");
+        printf("Sintaxis: \n");
         printf("bsb_svr -l <puerto_bsb_svr> -i <bitácora_deposito> -o <bitácora_retiro>\n" );
         exit(1);
     }
 
     // Variables para guardar los flags ingresados por consola
-    char *puerto, *b_deposito, *b_retiro;
+    char *puerto;
     int i;
 
     // Los argumentos pueden ser ingresados en desorden
@@ -66,7 +70,7 @@ void main(int numArgs , char *args[]){
         }
         else{
             printf("Error de argumentos: Argumentos equivocados.\n");
-            printf("Sintaxis: ");
+            printf("Sintaxis: \n");
             printf("bsb_svr -l <puerto_bsb_svr> -i <bitácora_deposito> -o <bitácora_retiro>\n" );
             exit(1);
         }
@@ -136,6 +140,8 @@ void main(int numArgs , char *args[]){
     {
         puts("Conexion realizada");
 
+        signal(SIGINT, INThandler);
+
         // Creamos los hilos para multiples conexiones
         pthread_t sniffer_thread;
 
@@ -155,12 +161,38 @@ void main(int numArgs , char *args[]){
 
     }
 
+
     if (client_sock < 0)
     {
         perror("Fallo accept");
         exit(1);
     }
 }
+
+
+void  INThandler(int sig)
+{
+     char  c;
+
+     signal(sig, SIG_IGN);
+
+     // Archivos de logs de deposito y retiro
+    FILE *archivo_deposito, *archivo_retiro;
+
+    archivo_deposito = fopen(b_deposito,"a");
+    archivo_retiro = fopen(b_retiro,"a");
+
+    // Al final de la conexion, se escribe en cada archivo el total disponible actualizado
+    fprintf(archivo_retiro, "Total Disponible: %d\n",TotalDisponible);
+    fprintf(archivo_deposito, "Total Disponible: %d\n",TotalDisponible);
+
+    fclose(archivo_retiro);
+    fclose(archivo_deposito);
+
+    exit(0);
+
+}
+
 
 
 // Manejo de conexion con varios clientes a traves de hilos
@@ -226,7 +258,6 @@ void *connection_handler(void *datos){
             // Creamos el codigo usuario
             for (i = j; i < MAX_BUFF; i = i + 1){
                 id_usuario[i-j] = buff_rcvd[i];
-                printf("%s\n",&id_usuario[i-j]);
             }
 
             // Convertimos el monto de string a entero
@@ -273,7 +304,6 @@ void *connection_handler(void *datos){
             // Creamos el codigo usuario
             for (i = j; i < MAX_BUFF; i = i + 1){
                 id_usuario[i-j] = buff_rcvd[i];
-                printf("%s\n",&id_usuario[i-j]);
             }
 
             // Convertimos el monto de string a entero
@@ -285,19 +315,15 @@ void *connection_handler(void *datos){
         }
     }
 
-    // Al final de la conexion, se escribe en cada archivo el total disponible actualizado
-    fprintf(archivo_retiro, "Total Disponible: %d\n",TotalDisponible);
-    fprintf(archivo_deposito, "Total Disponible: %d\n",TotalDisponible);
-
     // Verificaciones en caso que haya error al leer del socket
     if(read_size == 0)
     {
-        printf("Cliente desconectado");
+        printf("Cliente desconectado\n");
         fflush(stdout);
     }
     else if(read_size == -1)
     {
-        perror("Fallo en recv");
+        perror("Fallo en recv\n");
     }
 
     fclose(archivo_retiro);
