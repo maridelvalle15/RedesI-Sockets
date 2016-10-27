@@ -128,7 +128,7 @@ void main(int numArgs , char *args[])
         char server_reply[2000],buffer[MAX_BUFF];
         memset(server_reply,0,sizeof(server_reply)/sizeof(int));
         memset(buffer,0,sizeof(buffer)/sizeof(int));
-        char opcion_s[1];
+        char opcion_s[1], nuevo_codigo[100];
         int opcion;
         printf("\n");
         printf("Ingrese el numero correspondiente a la accion deseada: \n");
@@ -138,6 +138,7 @@ void main(int numArgs , char *args[])
         scanf("%s" , opcion_s);
         opcion = atoi(opcion_s);
         if ((opcion != 1) && (opcion != 2)){
+            printf("\n");
             printf("Opción no valida. Intente de nuevo.\n");
             continue;
         }
@@ -148,9 +149,22 @@ void main(int numArgs , char *args[])
             // Verificamos si la operacion a realizar es deposito
             if (strcmp(operacion,"d") == 0){
 
-            printf("Ingrese el monto a depositar : ");
-            scanf("%s" , message);
-
+                printf("Ingrese el monto a depositar : ");
+                scanf("%s" , message);
+                if (atoi(message) <= 0){
+                    printf("\n");
+                    printf("Monto ingresado no valido. Intente de nuevo.\n");
+                    printf("\n");
+                    continue;
+                }
+                printf("Ingrese nuevamente su codigo de usuario : ");
+                scanf("%s", nuevo_codigo);
+                if (strcmp(id_usuario, nuevo_codigo) != 0){
+                    printf("¡¡ALERTA DE SEGURIDAD!! Los identificadores del usuario no coinciden.\n");
+                    printf("El sistema se cerrará automáticamente.\n");
+                    printf("\n");
+                    exit(1);
+                }
             }
 
             // Verificamos si la operacion a realizar es retiro
@@ -163,6 +177,21 @@ void main(int numArgs , char *args[])
 
                 printf("Ingrese el monto a retirar : ");
                 scanf("%s" , message);
+                if (atoi(message) <= 0){
+                    printf("\n");
+                    printf("Monto ingresado no valido. Intente de nuevo.\n");
+                    printf("\n");
+                    continue;
+                }
+                printf("Ingrese nuevamente su codigo de usuario : ");
+                scanf("%s", nuevo_codigo);
+                if (strcmp(id_usuario, nuevo_codigo) != 0){
+                    printf("\n");
+                    printf("¡¡ALERTA DE SEGURIDAD!! Los identificadores del usuario no coinciden.\n");
+                    printf("El sistema se cerrará automáticamente.\n");
+                    printf("\n");
+                    exit(1);
+                }
 
                 // Recibimos el monto, y verificamos que no pase de 3000
                 int monto;
@@ -188,6 +217,7 @@ void main(int numArgs , char *args[])
                     // No se puede retirar un monto mayor al disponible en el cajero
                     if (monto>monto_recalculado){
                         printf("\n");
+                        printf("Dinero no disponible.\n");
                         printf("El monto ingresado no puede ser retirado. Intente de nuevo.\n");
                         continue;
                     }
