@@ -110,13 +110,13 @@ void main(int numArgs , char *args[])
     printf("¡BIENVENIDO!\n");
 
     char monto_restante[100];
+    int monto_recalculado;
     if( recv(sock , monto_restante , 100 , 0) < 0)
         {
             printf("Fallo al recibir monto restante");
             exit(1);
         }
-    printf("Monto restante: %s\n",monto_restante);
-
+    monto_recalculado = atoi(monto_restante);
     // El cliente solo puede realizar 3 retiros por conexion
     contador_retiros = 0;
 
@@ -138,6 +138,11 @@ void main(int numArgs , char *args[])
 
         // Verificamos si la operacion a realizar es retiro
         if (strcmp(operacion,"r") == 0){
+            // Alertamos al usuario que quedan menos de 5000 para retirar
+            if (monto_recalculado < 5000){
+                printf("Alerta: quedan menos de 5000 disponibles para retirar.\n");
+                printf("\n");
+            }
 
             printf("Ingrese el monto a retirar : ");
             scanf("%s" , message);
@@ -161,6 +166,13 @@ void main(int numArgs , char *args[])
                 if (contador_retiros > 3){
                     printf("Ha excedido el numero maximo de retiros.\n");
                     exit(1);
+                }
+
+                // No se puede retirar un monto mayor al disponible en el cajero
+                if (monto>monto_recalculado){
+                    printf("\n");
+                    printf("El monto ingresado no puede ser retirado. Intente de nuevo.\n");
+                    continue;
                 }
             }
         }
@@ -186,6 +198,10 @@ void main(int numArgs , char *args[])
             printf("Fallo en recv");
             break;
         }
+
+         if (strcmp(operacion,"r") == 0){
+            monto_recalculado = monto_recalculado - atoi(message);
+         }
 
         // Se imprime ticket con verificacion de la operacion
         printf("\n");
