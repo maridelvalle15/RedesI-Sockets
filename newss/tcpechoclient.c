@@ -125,7 +125,6 @@ void main(int numArgs , char *args[])
     //Mantiene la conexion con el servidor
     while(1)
     {
-
         char server_reply[2000],buffer[MAX_BUFF];
         memset(server_reply,0,sizeof(server_reply)/sizeof(int));
         memset(buffer,0,sizeof(buffer)/sizeof(int));
