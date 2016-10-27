@@ -54,7 +54,13 @@ Para el cliente:
         1. Retiro/Deposito
         2. Salir
         Cualquier otra opcion obligará al usuario a volver a intentar.
+    - Al intentar realizar las operaciones de retiro o deposito, se le solicitará nuevamente el código de
+    usuario. Si no coincide con el ingresado en la entrada, el sistema se cerrará automáticamente.
+    - Al ingresar el monto de retiro/deposito, si no es un monto valido se solicitará nuevamente. El monto
+    ingresado debe ser un numero mayor a 0.
     - Sólo se pueden realizar 3 retiros por conexion
 
 Para el servidor:
     - Para hacer cierre de caja, se debe ejecutar ctrl+C.
+    - En los archivos de log, el total disponible al final del dia queda redondeado a numero entero en caso
+    de haber sido depositado/retirado un monto con decimales.
