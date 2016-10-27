@@ -57,7 +57,7 @@ Para el cliente:
     - Al intentar realizar las operaciones de retiro o deposito, se le solicitará nuevamente el código de
     usuario. Si no coincide con el ingresado en la entrada, el sistema se cerrará automáticamente.
     - Al ingresar el monto de retiro/deposito, si no es un monto valido se solicitará nuevamente. El monto
-    ingresado debe ser un numero mayor a 0.
+    ingresado debe ser un numero entre 0 y 99999999999.
     - Sólo se pueden realizar 3 retiros por conexion
 
 Para el servidor:
