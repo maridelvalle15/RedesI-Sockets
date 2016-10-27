@@ -30,6 +30,8 @@ void main(int numArgs , char *args[])
     // Verificamos los parametros de entrada.
     if (numArgs != 9){
         printf("Error de argumentos: numero equivocado de argumentos.\n");
+        printf("Sintaxis: ");
+        printf("bsb_cli -d <nombre_modulo_atencion> -p <puerto_bsb_svr> -c <op> -i <codigo_usuario>\n" );
         exit(1);
     }
 
@@ -127,97 +129,124 @@ void main(int numArgs , char *args[])
         char server_reply[2000],buffer[MAX_BUFF];
         memset(server_reply,0,sizeof(server_reply)/sizeof(int));
         memset(buffer,0,sizeof(buffer)/sizeof(int));
-
-        // Verificamos si la operacion a realizar es deposito
-        if (strcmp(operacion,"d") == 0){
-
-        printf("Ingrese el monto a depositar : ");
-        scanf("%s" , message);
-
+        char opcion_s[1];
+        int opcion;
+        printf("\n");
+        printf("Ingrese el numero correspondiente a la accion deseada: \n");
+        printf("1. Retiro/Deposito \n");
+        printf("2. Salir \n");
+        printf("\n");
+        scanf("%s" , opcion_s);
+        opcion = atoi(opcion_s);
+        if ((opcion != 1) && (opcion != 2)){
+            printf("Opción no valida. Intente de nuevo.\n");
+            continue;
         }
+        else if (opcion == 2){
+            exit(0);
+        }
+        else if (opcion == 1){
+            // Verificamos si la operacion a realizar es deposito
+            if (strcmp(operacion,"d") == 0){
 
-        // Verificamos si la operacion a realizar es retiro
-        if (strcmp(operacion,"r") == 0){
-            // Alertamos al usuario que quedan menos de 5000 para retirar
-            if (monto_recalculado < 5000){
-                printf("Alerta: quedan menos de 5000 disponibles para retirar.\n");
-                printf("\n");
-            }
-
-            printf("Ingrese el monto a retirar : ");
+            printf("Ingrese el monto a depositar : ");
             scanf("%s" , message);
 
-            // Recibimos el monto, y verificamos que no pase de 3000
-            int monto;
-
-            monto = atoi(message);
-
-            // No se puede hacer retiro de un monto mayor a 3000
-            if (monto>3000){
-                printf("\n");
-                printf("Ingrese un monto menor o igual a 3000.\n");
-                continue;
             }
 
-            else{
-                // Solo se pueden hacer 3 retiros por conexion
-                contador_retiros ++;
-
-                if (contador_retiros > 3){
-                    printf("Ha excedido el numero maximo de retiros.\n");
-                    exit(1);
+            // Verificamos si la operacion a realizar es retiro
+            if (strcmp(operacion,"r") == 0){
+                // Alertamos al usuario que quedan menos de 5000 para retirar
+                if (monto_recalculado < 5000){
+                    printf("Alerta: quedan menos de 5000 disponibles para retirar.\n");
+                    printf("\n");
                 }
 
-                // No se puede retirar un monto mayor al disponible en el cajero
-                if (monto>monto_recalculado){
+                printf("Ingrese el monto a retirar : ");
+                scanf("%s" , message);
+
+                // Recibimos el monto, y verificamos que no pase de 3000
+                int monto;
+
+                monto = atoi(message);
+
+                // No se puede hacer retiro de un monto mayor a 3000
+                if (monto>3000){
                     printf("\n");
-                    printf("El monto ingresado no puede ser retirado. Intente de nuevo.\n");
+                    printf("Ingrese un monto menor o igual a 3000.\n");
                     continue;
                 }
+
+                else{
+                    // Solo se pueden hacer 3 retiros por conexion
+                    contador_retiros ++;
+
+                    if (contador_retiros > 3){
+                        printf("Ha excedido el numero maximo de retiros.\n");
+                        exit(1);
+                    }
+
+                    // No se puede retirar un monto mayor al disponible en el cajero
+                    if (monto>monto_recalculado){
+                        printf("\n");
+                        printf("El monto ingresado no puede ser retirado. Intente de nuevo.\n");
+                        continue;
+                    }
+                }
             }
+
+            // Copiamos la accion en el buffer
+            strcpy(buffer,operacion);
+            // Copiamos el monto en el buffer
+            strcat(buffer," ");
+            strcat(buffer,message);
+            // Copiamos el codigo del usuario en el buffer
+            strcat(buffer," ");
+            strcat(buffer,id_usuario);
+
+            //Envio de datos
+            if( send(sock , buffer , strlen(buffer)+1 , 0) < 0)
+            {
+                printf("Error al enviar datos");
+                exit(1);
+            }
+
+            if( recv(sock , server_reply , 2000 , 0) < 0)
+            {
+                printf("Fallo en recv");
+                break;
+            }
+
+            char *operacion_realizada;
+             if (strcmp(operacion,"r") == 0){
+                monto_recalculado = monto_recalculado - atoi(message);
+                operacion_realizada = strdup("Retiro");
+             }
+             else{
+                operacion_realizada = strdup("Deposito");
+             }
+
+            // Se imprime ticket con verificacion de la operacion
+            printf("\n");
+            printf("\n");
+            printf("**********************************\n");
+            printf("Transaccion exitosa\n");
+            printf("Datos de su transaccion\n");
+            printf("\n");
+            printf(" ---------------------------- \n");
+            printf("|                             \n");
+            printf("|                             \n");
+            printf("| Hora: %s \n",server_reply);
+            printf("| Operación realizada: %s \n",operacion_realizada);
+            printf("| Monto: %s \n",message);
+            printf("| Codigo de usuario: %s \n",id_usuario);
+            printf("|                             \n");
+            printf("|                             \n");
+            printf(" ---------------------------- \n");
+            printf("**********************************\n");
+            printf("\n");
+            printf("\n");
         }
-
-        // Copiamos la accion en el buffer
-        strcpy(buffer,operacion);
-        // Copiamos el monto en el buffer
-        strcat(buffer," ");
-        strcat(buffer,message);
-        // Copiamos el codigo del usuario en el buffer
-        strcat(buffer," ");
-        strcat(buffer,id_usuario);
-
-        //Envio de datos
-        if( send(sock , buffer , strlen(buffer)+1 , 0) < 0)
-        {
-            printf("Error al enviar datos");
-            exit(1);
-        }
-
-        if( recv(sock , server_reply , 2000 , 0) < 0)
-        {
-            printf("Fallo en recv");
-            break;
-        }
-
-         if (strcmp(operacion,"r") == 0){
-            monto_recalculado = monto_recalculado - atoi(message);
-         }
-
-        // Se imprime ticket con verificacion de la operacion
-        printf("\n");
-        printf("**********************************\n");
-        printf("Transaccion exitosa\n");
-        printf("Datos de su transaccion\n");
-        printf("\n");
-        printf(" ---------------------------- \n");
-        printf("|                             \n");
-        printf("|                             \n");
-        printf("| Hora: %s \n",server_reply);
-        printf("|                             \n");
-        printf("|                             \n");
-        printf(" ---------------------------- \n");
-        printf("**********************************\n");
-        printf("\n");
 
     }
 
