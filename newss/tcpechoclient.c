@@ -206,13 +206,6 @@ void main(int numArgs , char *args[])
                 }
 
                 else{
-                    // Solo se pueden hacer 3 retiros por conexion
-                    contador_retiros ++;
-
-                    if (contador_retiros > 3){
-                        printf("Ha excedido el numero maximo de retiros.\n");
-                        exit(1);
-                    }
 
                     // No se puede retirar un monto mayor al disponible en el cajero
                     if (monto>monto_recalculado){
@@ -220,6 +213,14 @@ void main(int numArgs , char *args[])
                         printf("Dinero no disponible.\n");
                         printf("El monto ingresado no puede ser retirado. Intente de nuevo.\n");
                         continue;
+                    }
+
+                    // Solo se pueden hacer 3 retiros por conexion
+                    contador_retiros ++;
+
+                    if (contador_retiros > 3){
+                        printf("Ha excedido el numero maximo de retiros.\n");
+                        exit(1);
                     }
                 }
             }
