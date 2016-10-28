@@ -22,6 +22,9 @@
 // Tamano maximo del buffer
 #define MAX_BUFF 100
 
+// Para imprimir ticket
+void imprimir_ticket(char sr[],char *or,char ms[],char *iu);
+
 
 //Funcion principal
 void main(int numArgs , char *args[])
@@ -226,13 +229,13 @@ void main(int numArgs , char *args[])
             }
 
             // Copiamos la accion en el buffer
-            strcpy(buffer,operacion);
+            strcpy(buffer, operacion);
             // Copiamos el monto en el buffer
-            strcat(buffer," ");
-            strcat(buffer,message);
+            strcat(buffer, " ");
+            strcat(buffer, message);
             // Copiamos el codigo del usuario en el buffer
-            strcat(buffer," ");
-            strcat(buffer,id_usuario);
+            strcat(buffer, " ");
+            strcat(buffer, id_usuario);
 
             //Envio de datos
             if( send(sock , buffer , strlen(buffer)+1 , 0) < 0)
@@ -257,29 +260,34 @@ void main(int numArgs , char *args[])
              }
 
             // Se imprime ticket con verificacion de la operacion
-            printf("\n");
-            printf("\n");
-            printf("**********************************\n");
-            printf("Transaccion exitosa\n");
-            printf("Datos de su transaccion\n");
-            printf("\n");
-            printf(" ---------------------------- \n");
-            printf("|                             \n");
-            printf("|                             \n");
-            printf("| Hora: %s \n",server_reply);
-            printf("| Operación realizada: %s \n",operacion_realizada);
-            printf("| Monto: %s \n",message);
-            printf("| Codigo de usuario: %s \n",id_usuario);
-            printf("|                             \n");
-            printf("|                             \n");
-            printf(" ---------------------------- \n");
-            printf("**********************************\n");
-            printf("\n");
-            printf("\n");
+             imprimir_ticket(server_reply, operacion_realizada ,message, id_usuario);
         }
 
     }
 
     close(sock);
 
+}
+
+// Procedimiento que imprime el ticket de confirmacion de operacion al cliente
+void imprimir_ticket(char server_reply[],char* operacion_realizada,char message[],char *id_usuario){
+    printf("\n");
+    printf("\n");
+    printf("**********************************\n");
+    printf("Transaccion exitosa\n");
+    printf("Datos de su transaccion\n");
+    printf("\n");
+    printf(" ---------------------------- \n");
+    printf("|                             \n");
+    printf("|                             \n");
+    printf("| Hora: %s \n",server_reply);
+    printf("| Operación realizada: %s \n",operacion_realizada);
+    printf("| Monto: %s \n",message);
+    printf("| Codigo de usuario: %s \n",id_usuario);
+    printf("|                             \n");
+    printf("|                             \n");
+    printf(" ---------------------------- \n");
+    printf("**********************************\n");
+    printf("\n");
+    printf("\n");
 }

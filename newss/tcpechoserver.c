@@ -25,6 +25,8 @@
 void *connection_handler(void *);
 // Para captar ctrl+C
 void INThandler(int);
+// Procesa los datos del buffer
+void procesar_buffer(char bf[],char h[], char *bd, char *br);
 
 // Total disponible del cajero
 int TotalDisponible = 80000;
@@ -114,11 +116,9 @@ void main(int numArgs , char *args[]){
     //Listen
     listen(socket_desc , 3);
 
-
     //Acepta la conexion
     puts("Esperando conexiones entrantes...");
     c = sizeof(struct sockaddr_in);
-
 
     //Creamos los archivos para guardar los logs de deposito y retiro
     archivo_deposito = fopen(b_deposito,"a");
@@ -158,7 +158,6 @@ void main(int numArgs , char *args[]){
         }
 
     }
-
 
     if (client_sock < 0)
     {
@@ -222,118 +221,28 @@ void *connection_handler(void *datos){
 
     while( (read_size = recv(sock , buff_rcvd , MAX_BUFF , 0)) > 0 )
     {
-
+        // Debe aparecer un mensaje en el servidor indicando que
+        // quedan 5000 disponibles
         if (TotalDisponible < 5000){
             puts("Total disponible menor a 5000");
         }
-        // Chequeamos si la accion es de retiro
-        if ( buff_rcvd[0] == 'r'){
+        //Obtenemos la fecha y hora
+        time_t now;
+        struct tm *ts;
+        struct tm *tsalida;
+        now = time(0);
+        ts = localtime(&now);
+        strftime(HOUR, sizeof(HOUR), "%a %Y-%m-%d %H:%M:%S %Z", ts);
 
-            //Obtenemos la fecha y hora
-            time_t now;
-            struct tm *ts;
-            struct tm *tsalida;
-            now = time(0);
-            ts = localtime(&now);
-            strftime(HOUR, sizeof(HOUR), "%a %Y-%m-%d %H:%M:%S %Z", ts);
+        // Leemos del buffer
+        procesar_buffer(buff_rcvd, HOUR, b_deposito, b_retiro);
 
-            // Leemos del buffer
-            // Variables para la lectura del buffer
-            int i, j, monto_decrementar, contador_espacios;
-            contador_espacios = 1;
-            char monto[100];
-            char id_usuario[100];
-            // Creamos el monto
-            memset(monto,0,sizeof(monto)/sizeof(int));
-            for (i = 2; i < MAX_BUFF; i = i + 1){
-                if (buff_rcvd[i] == ' '){
-                    contador_espacios ++;
-                }
-                else{
-                    if (contador_espacios == 1){
-                        monto[i-2] = buff_rcvd[i];
-                    }
-                    else{
-                        j = i;
-                        break;
-                    }
-                }
-            }
-            // Creamos el codigo usuario
-            memset(id_usuario,0,sizeof(id_usuario)/sizeof(int));
-            for (i = j; i < MAX_BUFF; i = i + 1){
-                id_usuario[i-j] = buff_rcvd[i];
-            }
+        // Enviamos respuesta al usuario de su solicitud
+        memset(buff_snt ,0, sizeof(buff_snt)/sizeof(int));
+        // Copiamos la accion en el buffer
+        strcpy(buff_snt, HOUR);
+        write(sock , buff_snt , MAX_BUFF+1);
 
-            // Convertimos el monto de string a entero
-            sscanf(monto, "%d", &monto_decrementar);
-            // Decrementamos el total disponible
-            TotalDisponible = TotalDisponible - monto_decrementar;
-
-            // Escribimos la informacion pertinente en el archivo
-            fprintf(archivo_retiro, "Fecha y hora del retiro: %s, Monto: %s, Codigo de usuario: %s\n", HOUR, monto, id_usuario);
-
-            // Enviamos respuesta al usuario de su solicitud
-            memset(buff_snt, 0, sizeof(buff_snt)/sizeof(int));
-            // Copiamos la accion en el buffer
-            strcpy(buff_snt, HOUR);
-            write(sock, buff_snt, MAX_BUFF+1);
-
-        }
-
-        // Chequeamos si la accion es de deposito
-        else if ( buff_rcvd[0] == 'd'){
-
-            //Obtenemos la fecha y hora
-            time_t now;
-            struct tm *ts;
-            struct tm *tsalida;
-            now = time(0);
-            ts = localtime(&now);
-            strftime(HOUR, sizeof(HOUR), "%a %Y-%m-%d %H:%M:%S %Z", ts);
-
-            // Leemos del buffer
-            // Variables para la lectura del buffer
-            int i, j, monto_incrementar, contador_espacios;
-            contador_espacios = 1;
-            char monto[100], id_usuario[100];
-            // Creamos el monto
-            memset(monto,0,sizeof(monto)/sizeof(int));
-            for (i = 2; i < MAX_BUFF; i = i + 1){
-                if (buff_rcvd[i] == ' '){
-                    contador_espacios ++;
-                }
-                else{
-                    if (contador_espacios == 1){
-                        monto[i-2] = buff_rcvd[i];
-                    }
-                    else{
-                        j = i;
-                        break;
-                    }
-                }
-            }
-            // Creamos el codigo usuario
-            memset(id_usuario,0,sizeof(id_usuario)/sizeof(int));
-            for (i = j; i < MAX_BUFF; i = i + 1){
-                id_usuario[i-j] = buff_rcvd[i];
-            }
-
-            // Convertimos el monto de string a entero
-            sscanf(monto, "%d", &monto_incrementar);
-            // Incrementamos el total disponible
-            TotalDisponible = TotalDisponible + monto_incrementar;
-
-            // Escribimos la informacion pertinente en el archivo
-            fprintf(archivo_deposito, "Fecha y hora del deposito: %s, Monto: %s, Codigo de usuario: %s\n",HOUR,monto,id_usuario);
-
-            // Enviamos respuesta al usuario de su solicitud
-            memset(buff_snt,0,sizeof(buff_snt)/sizeof(int));
-            // Copiamos la accion en el buffer
-            strcpy(buff_snt,HOUR);
-            write(sock , buff_snt , MAX_BUFF+1);
-
-        }
     }
 
     // Verificaciones en caso que haya error al leer del socket
@@ -347,9 +256,75 @@ void *connection_handler(void *datos){
         perror("Fallo al recibir datos del cliente\n");
     }
 
-    fclose(archivo_retiro);
-    fclose(archivo_deposito);
     close(sock);
 
-    ////////////////////////////////////////////////////////////////
+}
+
+// Procedimiento que procesa los datos recibidos en el buffer
+    /* Parametros:
+        buff_rcvd: datos recibidos en el buffer
+        HOUR: hora de la transaccion
+        b_deposito: nombre del archivo de deposito
+        b_retiro: nombre del archivo de retiro
+    */
+void procesar_buffer(char buff_rcvd[], char HOUR[], char *b_deposito, char *b_retiro){
+     // Archivos de logs de deposito y retiro
+    FILE *archivo_deposito, *archivo_retiro;
+
+    archivo_deposito = fopen(b_deposito,"a");
+    archivo_retiro = fopen(b_retiro,"a");
+
+    // Variables para la lectura del buffer
+    int i, j, monto_modificar, contador_espacios;
+    contador_espacios = 1;
+    char monto[100];
+    char id_usuario[100];
+
+    // Creamos el monto
+    memset(monto,0,sizeof(monto)/sizeof(int));
+    for (i = 2; i < MAX_BUFF; i = i + 1){
+        if (buff_rcvd[i] == ' '){
+            contador_espacios ++;
+        }
+        else{
+            if (contador_espacios == 1){
+                monto[i-2] = buff_rcvd[i];
+            }
+            else{
+                j = i;
+                break;
+            }
+        }
+    }
+
+    // Creamos el codigo usuario
+    memset(id_usuario,0,sizeof(id_usuario)/sizeof(int));
+    for (i = j; i < MAX_BUFF; i = i + 1){
+        id_usuario[i-j] = buff_rcvd[i];
+    }
+
+    // Convertimos el monto de string a entero
+    sscanf(monto, "%d", &monto_modificar);
+
+    // Decrementamos el total disponible
+    // Si es retiro, decrementamos
+    if (buff_rcvd[0] == 'r'){
+        TotalDisponible = TotalDisponible - monto_modificar;
+    }
+    // Si es deposito, incrementamos
+    else if (buff_rcvd[0] == 'd'){
+        TotalDisponible = TotalDisponible + monto_modificar;
+    }
+
+    // Escribimos la informacion pertinente en el archivo
+    // Si es retiro
+    if (buff_rcvd[0] == 'r'){
+    fprintf(archivo_retiro, "Fecha y hora del retiro: %s, Monto: %s, Codigo de usuario: %s\n", HOUR, monto, id_usuario);
+    fclose(archivo_retiro);
+    }
+    // Si es deposito
+    else if (buff_rcvd[0] == 'd'){
+        fprintf(archivo_deposito, "Fecha y hora del deposito: %s, Monto: %s, Codigo de usuario: %s\n", HOUR, monto, id_usuario);
+    fclose(archivo_deposito);
+    }
 }
