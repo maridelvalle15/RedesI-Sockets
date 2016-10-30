@@ -219,13 +219,26 @@ void *connection_handler(void *datos){
     sprintf(monto_restante, "%d", TotalDisponible);
     write(sock, monto_restante, 100);
 
-    while( (read_size = recv(sock , buff_rcvd , MAX_BUFF , 0)) > 0 )
+    char signal[100];
+
+    while(recv(sock , signal , 100 , 0) > 0)
     {
         // Debe aparecer un mensaje en el servidor indicando que
         // quedan 5000 disponibles
         if (TotalDisponible < 5000){
             puts("Total disponible menor a 5000");
         }
+
+        sprintf(monto_restante, "%d", TotalDisponible);
+        write(sock, monto_restante, 100);
+
+
+
+        if (read_size = recv(sock , buff_rcvd , MAX_BUFF , 0) < 0 ){
+            printf("Fallo en recv datos");
+            exit(1);
+        }
+
         //Obtenemos la fecha y hora
         time_t now;
         struct tm *ts;

@@ -172,6 +172,20 @@ void main(int numArgs , char *args[])
 
             // Verificamos si la operacion a realizar es retiro
             if (strcmp(operacion,"r") == 0){
+                //Envio de datos
+                char signal[100], monto_recibido[100];
+                if( send(sock , signal , strlen(signal)+1 , 0) < 0)
+                {
+                    printf("Error al enviar señal");
+                    exit(1);
+                }
+
+                if( recv(sock , monto_recibido , 100 , 0) < 0)
+                {
+                    printf("Fallo en recv monto");
+                    exit(1);
+                }
+                monto_recalculado = atoi(monto_recibido);
                 // Alertamos al usuario que quedan menos de 5000 para retirar
                 if (monto_recalculado < 5000){
                     printf("Alerta: quedan menos de 5000 disponibles para retirar.\n");
@@ -210,6 +224,8 @@ void main(int numArgs , char *args[])
 
                 else{
 
+
+
                     // No se puede retirar un monto mayor al disponible en el cajero
                     if (monto>monto_recalculado){
                         printf("\n");
@@ -247,7 +263,7 @@ void main(int numArgs , char *args[])
             if( recv(sock , server_reply , 2000 , 0) < 0)
             {
                 printf("Fallo en recv");
-                break;
+                exit(1);
             }
 
             char *operacion_realizada;
