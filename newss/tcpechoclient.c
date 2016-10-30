@@ -149,6 +149,22 @@ void main(int numArgs , char *args[])
             exit(0);
         }
         else if (opcion == 1){
+
+            //Envio de datos
+            char signal[100], monto_recibido[100];
+            if( send(sock , signal , strlen(signal)+1 , 0) < 0)
+            {
+                printf("Error al enviar señal");
+                exit(1);
+            }
+
+            if( recv(sock , monto_recibido , 100 , 0) < 0)
+            {
+                printf("Fallo en recv monto");
+                exit(1);
+            }
+            monto_recalculado = atoi(monto_recibido);
+
             // Verificamos si la operacion a realizar es deposito
             if (strcmp(operacion,"d") == 0){
 
@@ -172,20 +188,7 @@ void main(int numArgs , char *args[])
 
             // Verificamos si la operacion a realizar es retiro
             if (strcmp(operacion,"r") == 0){
-                //Envio de datos
-                char signal[100], monto_recibido[100];
-                if( send(sock , signal , strlen(signal)+1 , 0) < 0)
-                {
-                    printf("Error al enviar señal");
-                    exit(1);
-                }
 
-                if( recv(sock , monto_recibido , 100 , 0) < 0)
-                {
-                    printf("Fallo en recv monto");
-                    exit(1);
-                }
-                monto_recalculado = atoi(monto_recibido);
                 // Alertamos al usuario que quedan menos de 5000 para retirar
                 if (monto_recalculado < 5000){
                     printf("Alerta: quedan menos de 5000 disponibles para retirar.\n");
