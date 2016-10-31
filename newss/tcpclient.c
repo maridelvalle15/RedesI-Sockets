@@ -178,7 +178,7 @@ void main(int numArgs , char *args[])
 
             if (error != 0) {
                 /* socket has a non zero error status */
-                printf("Error al intentar contactar el servidor\n");
+                printf("Se perdió la conexión con el servidor\n");
                 exit(1);
             }
 

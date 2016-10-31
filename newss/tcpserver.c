@@ -5,7 +5,7 @@
 * @author Marisela Del Valle 11-10267
 *
 * @description
-*           Crea el servidor y crea un nuevo socket para que uno o mas clientes se conecten.
+*           Conexión TCP cliente-servidor. Crea el servidor y crea un nuevo socket para que uno o mas clientes se conecten.
 *
 */
 
@@ -135,8 +135,7 @@ void main(int numArgs , char *args[]){
 
     while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
     {
-        printf("Se obtuvo una conexión desde %s\n",
-             inet_ntoa(server.sin_addr) );
+        printf("Se obtuvo una conexión\n");
 
         // Señal que detecta si se ejecuta ctrl+C
         signal(SIGINT, INThandler);
