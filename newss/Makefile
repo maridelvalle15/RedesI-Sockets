@@ -1,10 +1,10 @@
-all : tcpechoserver tcpechoclient
+all : tcpserver tcpclient
 
-tcpechoserver : tcpechoserver.c
-	gcc -o bsb_svr tcpechoserver.c -pthread
+tcpserver : tcpserver.c
+	gcc -o bsb_svr tcpserver.c -pthread
 
-tcpechoclient : tcpechoclient.c
-	gcc -o bsb_cli tcpechoclient.c
+tcpclient : tcpclient.c
+	gcc -o bsb_cli tcpclient.c
 
 clear :
 	rm *.o
