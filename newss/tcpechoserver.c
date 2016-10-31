@@ -29,7 +29,7 @@ void INThandler(int);
 void procesar_buffer(char bf[],char h[], char *bd, char *br);
 
 // Total disponible del cajero
-int TotalDisponible = 9000;
+int TotalDisponible = 5000;
 // Nombres de los archivos de deposito y retiro
 char *b_deposito, *b_retiro;
 

@@ -56,7 +56,7 @@ void main(int numArgs , char *args[])
         }
         else if (strcmp(args[i],"-i") == 0){
             id_usuario = strdup(args[i+1]);
-            if (strlen(id_usuario) > 8){
+            if (strlen(id_usuario) > 7){
                 printf("El codigo de usuario no debe tener mas de 8 caracteres\n");
                 exit(1);
             }
@@ -167,7 +167,6 @@ void main(int numArgs , char *args[])
                 exit(1);
             }
             monto_recalculado = atoi(monto_recibido);
-
             int error = 0;
             socklen_t len = sizeof (error);
             int retval = getsockopt (sock, SOL_SOCKET, SO_ERROR, &error, &len);
@@ -240,7 +239,8 @@ void main(int numArgs , char *args[])
                 if (monto>3000){
                     printf("\n");
                     printf("Ingrese un monto menor o igual a 3000.\n");
-                    char restart[100];
+                    char restart[7];
+                    memset(restart,0,sizeof(restart)/sizeof(int));
                     strcpy(restart,"restart");
                     write(sock,restart,100);
                     continue;
@@ -255,6 +255,10 @@ void main(int numArgs , char *args[])
                         printf("\n");
                         printf("Dinero no disponible.\n");
                         printf("El monto ingresado no puede ser retirado. Intente de nuevo.\n");
+                        char restart[7];
+                        memset(restart,0,sizeof(restart)/sizeof(int));
+                        strcpy(restart,"restart");
+                        write(sock,restart,100);
                         continue;
                     }
 
@@ -296,7 +300,6 @@ void main(int numArgs , char *args[])
                 operacion_realizada = strdup("Retiro");
              }
              else{
-                monto_recalculado = monto_recalculado + atoi(message);
                 operacion_realizada = strdup("Deposito");
              }
 
