@@ -64,3 +64,5 @@ Para el servidor:
     - Para hacer cierre de caja, se debe ejecutar ctrl+C.
     - En los archivos de log, el total disponible al final del dia queda redondeado a numero entero en caso
     de haber sido depositado/retirado un monto con decimales.
+    - En algunos casos muy particulares, si un cliente introduce mal la verificación de codigo de usuario
+    ocurre segmentation fault.
