@@ -64,6 +64,8 @@ Para el cliente:
     si un cliente está realizando una operacion de depósito, el otro cliente debe esperar a que realice el
     depósito ("que se haga efectivo") para seleccionar 1 del menú y realizar un retiro. Si presiona 1 antes de
     tiempo, puede que no se vea reflejada la operacion de depósito.
+    - Si el cliente está conectado, y el servidor se cae, al intentar realizar una operación aparecerá un
+    mensaje indicando que se perdió la conexión con el servidor.
 
 Para el servidor:
     - Para hacer cierre de caja, se debe ejecutar ctrl+C.
