@@ -60,6 +60,10 @@ Para el cliente:
     - Al ingresar el monto de retiro/deposito, si no es un monto valido se solicitará nuevamente. El monto
     ingresado debe ser un numero entre 0 y 99999999999.
     - Sólo se pueden realizar 3 retiros por conexion
+    - Si dos clientes están conectados al mismo tiempo, no deben realizar operaciones simultáneas. Por ejemplo,
+    si un cliente está realizando una operacion de depósito, el otro cliente debe esperar a que realice el
+    depósito ("que se haga efectivo") para seleccionar 1 del menú y realizar un retiro. Si presiona 1 antes de
+    tiempo, puede que no se vea reflejada la operacion de depósito.
 
 Para el servidor:
     - Para hacer cierre de caja, se debe ejecutar ctrl+C.
