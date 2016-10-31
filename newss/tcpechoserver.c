@@ -135,7 +135,8 @@ void main(int numArgs , char *args[]){
 
     while( (client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c)) )
     {
-        puts("Conexion realizada");
+        printf("Se obtuvo una conexión desde %s\n",
+             inet_ntoa(server.sin_addr) );
 
         // Señal que detecta si se ejecuta ctrl+C
         signal(SIGINT, INThandler);
@@ -263,7 +264,7 @@ void *connection_handler(void *datos){
     // Verificaciones en caso que haya error al leer del socket
     if(read_size == 0)
     {
-        printf("Cliente desconectado\n");
+        printf("Se cerró una conexión\n");
         fflush(stdout);
     }
     else if(read_size == -1)

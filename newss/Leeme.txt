@@ -50,6 +50,7 @@ ______________________
 Limitaciones
 ======================
 Para el cliente:
+    - El codigo de usuario no debe contener mas de 8 caracteres
     - Al conectarse puede seleccionar entre 2 opciones (ingresando el numero entero correspondiente):
         1. Retiro/Deposito
         2. Salir

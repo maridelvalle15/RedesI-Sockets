@@ -56,6 +56,10 @@ void main(int numArgs , char *args[])
         }
         else if (strcmp(args[i],"-i") == 0){
             id_usuario = strdup(args[i+1]);
+            if (strlen(id_usuario) > 8){
+                printf("El codigo de usuario no debe tener mas de 8 caracteres\n");
+                exit(1);
+            }
         }
         else{
             printf("Error de argumentos: Argumentos equivocados.\n");
@@ -292,6 +296,7 @@ void main(int numArgs , char *args[])
                 operacion_realizada = strdup("Retiro");
              }
              else{
+                monto_recalculado = monto_recalculado + atoi(message);
                 operacion_realizada = strdup("Deposito");
              }
 
