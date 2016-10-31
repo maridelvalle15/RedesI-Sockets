@@ -149,7 +149,6 @@ void main(int numArgs , char *args[])
             exit(0);
         }
         else if (opcion == 1){
-
             //Envio de datos
             char signal[100], monto_recibido[100];
             if( send(sock , signal , strlen(signal)+1 , 0) < 0)
@@ -164,6 +163,21 @@ void main(int numArgs , char *args[])
                 exit(1);
             }
             monto_recalculado = atoi(monto_recibido);
+
+            int error = 0;
+            socklen_t len = sizeof (error);
+            int retval = getsockopt (sock, SOL_SOCKET, SO_ERROR, &error, &len);
+            if (retval != 0) {
+                /* there was a problem getting the error code */
+                fprintf(stderr, "error getting socket error code: %s\n", strerror(retval));
+                return;
+            }
+
+            if (error != 0) {
+                /* socket has a non zero error status */
+                printf("Error al intentar contactar el servidor\n");
+                exit(1);
+            }
 
             // Verificamos si la operacion a realizar es deposito
             if (strcmp(operacion,"d") == 0){
@@ -222,6 +236,9 @@ void main(int numArgs , char *args[])
                 if (monto>3000){
                     printf("\n");
                     printf("Ingrese un monto menor o igual a 3000.\n");
+                    char restart[100];
+                    strcpy(restart,"restart");
+                    write(sock,restart,100);
                     continue;
                 }
 
@@ -279,6 +296,22 @@ void main(int numArgs , char *args[])
              }
 
             // Se imprime ticket con verificacion de la operacion
+
+            error = 0;
+            len = sizeof (error);
+            retval = getsockopt (sock, SOL_SOCKET, SO_ERROR, &error, &len);
+            if (retval != 0) {
+                /* there was a problem getting the error code */
+                fprintf(stderr, "error getting socket error code: %s\n", strerror(retval));
+                return;
+            }
+
+            if (error != 0) {
+                /* socket has a non zero error status */
+                printf("Error al intentar contactar el servidor\n");
+                exit(1);
+            }
+
              imprimir_ticket(server_reply, operacion_realizada ,message, id_usuario);
         }
 

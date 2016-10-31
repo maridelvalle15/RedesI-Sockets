@@ -29,7 +29,7 @@ void INThandler(int);
 void procesar_buffer(char bf[],char h[], char *bd, char *br);
 
 // Total disponible del cajero
-int TotalDisponible = 80000;
+int TotalDisponible = 9000;
 // Nombres de los archivos de deposito y retiro
 char *b_deposito, *b_retiro;
 
@@ -232,11 +232,13 @@ void *connection_handler(void *datos){
         sprintf(monto_restante, "%d", TotalDisponible);
         write(sock, monto_restante, 100);
 
-
-
         if (read_size = recv(sock , buff_rcvd , MAX_BUFF , 0) < 0 ){
             printf("Fallo en recv datos");
             exit(1);
+        }
+
+        if (strcmp(buff_rcvd,"restart") == 0){
+            continue;
         }
 
         //Obtenemos la fecha y hora
